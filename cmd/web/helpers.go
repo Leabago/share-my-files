@@ -1,12 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
-
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"runtime/debug"
 )
 
 func getEnv(name string, errorLog *log.Logger) string {
@@ -18,23 +18,43 @@ func getEnv(name string, errorLog *log.Logger) string {
 	return varEnv
 }
 
-func openDB(errorLog *log.Logger) (*gorm.DB, error) {
-	DB_NAME := getEnv("DB_NAME", errorLog)
-	DB_USER := getEnv("DB_USER", errorLog)
-	DB_PASSWORD := getEnv("DB_PASSWORD", errorLog)
+func (app *application) serverError(w http.ResponseWriter, err error) {
+	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
+	// app.errorLog.Println(trace)
+	app.errorLog.Output(2, trace)
+	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+}
 
-	dsn := fmt.Sprintf(
-		"host=localhost user=%s password=%s dbname=%s port=5432 sslmode=disable",
-		DB_USER,
-		DB_PASSWORD,
-		DB_NAME,
-	)
+func (app *application) clientError(w http.ResponseWriter, status int) {
+	http.Error(w, http.StatusText(status), status)
+}
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
-	if err != nil {
-		errorLog.Panic("failed to connect database")
+func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
+	// Retrieve the appropriate template set from the cache based on the page name
+	// (like 'home.page.tmpl'). If no entry exists in the cache with the
+	// provided name, call the serverError helper method that we made earlier.
+	ts, ok := app.templateCache[name]
+	if !ok {
+		app.serverError(w, fmt.Errorf("the template %s does not exist", name))
+		return
 	}
 
-	return db, err
+	// Initialize a new buffer.
+	buf := new(bytes.Buffer)
+
+	// Write the template to the buffer, instead of straight to the
+	// http.ResponseWriter. If there's an error, call our serverError helper and then
+	// return.
+
+	// Execute the template set, passing in any dynamic data.
+	err := ts.Execute(buf, td)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// Write the contents of the buffer to the http.ResponseWriter. Again, this
+	// is another time where we pass our http.ResponseWriter to a function that
+	// takes an io.Writer.
+	buf.WriteTo(w)
 }

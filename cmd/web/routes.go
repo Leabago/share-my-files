@@ -3,15 +3,26 @@ package main
 import (
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/bmizerany/pat"
+	"github.com/justinas/alice"
 )
 
 func (app *application) routes() http.Handler {
-	router := mux.NewRouter()
-	router.HandleFunc("/home", home)
-	// r.HandleFunc("/products", ProductsHandler)
-	// r.HandleFunc("/articles", ArticlesHandler)
-	http.Handle("/", router)
+	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, app.secureHeaders)
+	dynamicMiddleware := alice.New()
 
-	return router
+	mux := pat.New()
+
+	// snippets
+	mux.Get("/", dynamicMiddleware.ThenFunc(app.home))
+	mux.Post("/", dynamicMiddleware.ThenFunc(app.homeGetFiles))
+
+	// ping
+	mux.Get("/ping", http.HandlerFunc(ping))
+
+	// static
+	fileServer := http.FileServer(http.Dir("./ui/static"))
+	mux.Get("/static/", http.StripPrefix("/static/", fileServer))
+
+	return standardMiddleware.Then(mux)
 }

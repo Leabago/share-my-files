@@ -5,7 +5,11 @@ import (
 	"path/filepath"
 )
 
-func newTemplateCache(dir string) (map[string]*template.Template, error) {
+type templateData struct {
+}
+
+func (app *application) newTemplateCache(dir string) (map[string]*template.Template, error) {
+	app.infoLog.Printf("newTemplateCache")
 	cache := map[string]*template.Template{}
 
 	pages, err := filepath.Glob(filepath.Join(dir, "*page.tmpl.html"))
@@ -16,6 +20,7 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 
 	for _, page := range pages {
 		name := filepath.Base(page)
+		app.infoLog.Println("name:", name)
 
 		ts, err := template.New(name).ParseFiles(page)
 		if err != nil {
@@ -35,5 +40,7 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 		cache[name] = ts
 	}
 
+	app.infoLog.Println("cache:", cache)
+	app.infoLog.Println("cache:")
 	return cache, nil
 }

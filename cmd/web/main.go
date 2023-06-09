@@ -37,15 +37,18 @@ func main() {
 	debugLog := log.New(os.Stdout, "DEBUG\t", logFormat)
 	errorLog := log.New(os.Stderr, "ERROR\t", logFormat)
 
-	templateCache, err := newTemplateCache("./ui/html/")
-
 	app := &application{
-		infoLog:       infoLog,
-		debugLog:      debugLog,
-		errorLog:      errorLog,
-		templateCache: templateCache,
+		infoLog:  infoLog,
+		debugLog: debugLog,
+		errorLog: errorLog,
+
 		// files: &operation.FileModel{DB: db},
 	}
+	templateCache, err := app.newTemplateCache("./ui/html/")
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	app.templateCache = templateCache
 
 	APP_PORT := getEnv("APP_PORT", errorLog)
 
