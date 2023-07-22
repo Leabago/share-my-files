@@ -1,0 +1,20 @@
+{{template "base" .}}
+{{define "title"}}Snippet{{end}}
+{{define "main"}}
+<p>
+    show page
+</p>
+
+{{with .File}}
+<div class="file">
+    <div class="metadata">
+        <strong>{{.FolderCode}}</strong>
+    </div>  
+
+    <a href="/snippet/download/{{.FolderCode}}" download="proposed_file_name">Download</a>
+
+    
+</div>
+{{end}}
+
+{{end}}

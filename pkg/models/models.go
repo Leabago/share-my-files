@@ -8,5 +8,6 @@ type Product struct {
 
 type File struct {
 	// gorm.Model
-	Name string
+	Name       string
+	FolderCode string
 }

@@ -1,0 +1,47 @@
+{{template "base" .}}
+{{define "title"}}Create a New Snippet{{end}}
+{{define "main"}}
+
+<div class="container p-6"> 
+
+    <form method="post" enctype="multipart/form-data" onsubmit="return validateMyForm();">
+      <div class="row">
+
+        <div class="col">
+          <div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+            <input type="file" id="input" name='input' multiple style="display:none" />
+            <button id="fileSelect" type="button">Select some files</button>
+          </div>
+        </div>
+
+        <div class="col">
+          <p>List of selected files:</p>
+          <ul id="output" ></ul>
+
+          <p id="sizeok">false</p>
+        </div>
+
+
+
+      </div>
+
+      <div class="row">
+
+        <div class="col">
+
+          <p>
+            <label for="fileSize">Total size:</label>
+            <output id="fileSize">0</output>
+          </p>
+        </div>
+
+        <div class="col">
+          <button id="submit">Submit</button>
+    
+        </div>
+
+      </div>
+    </form>
+  </div>
+  
+{{end}}

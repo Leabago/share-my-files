@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"share-my-file/pkg/models/operation"
 	"time"
 )
 
@@ -16,9 +17,11 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 type application struct {
-	infoLog  *log.Logger
-	errorLog *log.Logger
-	debugLog *log.Logger
+	// infoLog  *log.Logger
+	// errorLog *log.Logger
+	// debugLog *log.Logger
+
+	logger AppLogger
 
 	files interface {
 		Insert()
@@ -29,28 +32,41 @@ type application struct {
 	templateCache map[string]*template.Template
 }
 
+type AppLogger struct {
+	infoLog  *log.Logger
+	errorLog *log.Logger
+	debugLog *log.Logger
+}
+
 func main() {
 	fmt.Println("start app")
+
+	// create folder
 
 	logFormat := log.Ldate | log.Ltime | log.Lshortfile
 	infoLog := log.New(os.Stdout, "INFO\t", logFormat)
 	debugLog := log.New(os.Stdout, "DEBUG\t", logFormat)
 	errorLog := log.New(os.Stderr, "ERROR\t", logFormat)
 
-	app := &application{
+	logger := AppLogger{
 		infoLog:  infoLog,
 		debugLog: debugLog,
 		errorLog: errorLog,
-
-		// files: &operation.FileModel{DB: db},
 	}
+
+	app := &application{
+		logger: logger,
+		files:  &operation.FileModel{},
+	}
+
 	templateCache, err := app.newTemplateCache("./ui/html/")
 	if err != nil {
 		errorLog.Fatal(err)
 	}
 	app.templateCache = templateCache
-
-	APP_PORT := getEnv("APP_PORT", errorLog)
+	// APP_PORT := getEnv("APP_PORT", logger)
+	APP_PORT := ":8080"
+	createFolderForFiles(logger)
 
 	srv := &http.Server{
 		Handler: app.routes(),

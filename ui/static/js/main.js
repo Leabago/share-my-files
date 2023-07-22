@@ -165,12 +165,12 @@ function validateMyForm() {
   }
 
   if (numberOfBytes <= K ** 3) {
-	alert("validations passed");
+	// alert("validations passed");
 	return true;
 
 
   } else {
-	alert("validation failed false");
+	// alert("validation failed false");
 	return false;
   }
 }

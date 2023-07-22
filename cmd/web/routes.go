@@ -13,9 +13,17 @@ func (app *application) routes() http.Handler {
 
 	mux := pat.New()
 
-	// snippets
-	mux.Get("/", dynamicMiddleware.ThenFunc(app.home))
-	mux.Post("/", dynamicMiddleware.ThenFunc(app.homeGetFiles))
+	// main page
+	// mux.Get("/", dynamicMiddleware.ThenFunc(app.home))
+	// mux.Post("/", dynamicMiddleware.ThenFunc(app.homeGetFiles))
+
+	// mux.Get("/snippet/create", dynamicMiddleware.Append(app.requireAuthentication).ThenFunc(app.createSnippetForm))
+	// mux.Post("/snippet/create", dynamicMiddleware.Append(app.requireAuthentication).ThenFunc(app.createSnippet))
+
+	mux.Get("/snippet/create", dynamicMiddleware.ThenFunc(app.createSnippetForm))
+	mux.Post("/snippet/create", dynamicMiddleware.ThenFunc(app.homeGetFiles))
+	mux.Get("/snippet/:id", dynamicMiddleware.ThenFunc(app.showSnippet))
+	mux.Get("/snippet/download/:id", dynamicMiddleware.ThenFunc(app.getSnippet))
 
 	// ping
 	mux.Get("/ping", http.HandlerFunc(ping))
