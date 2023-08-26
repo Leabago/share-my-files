@@ -1,0 +1,16 @@
+{{template "base" .}}
+{{define "title"}}Snippet{{end}}
+{{define "main"}}
+
+<form action="/archive/asd123" method="get">   
+   
+    <div>
+        <label>Title:</label>
+        <input type='text' name='title'>
+    </div>
+
+    <div>
+        <input type='submit' value="Find">
+    </div>
+</form>
+{{end}}

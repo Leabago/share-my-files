@@ -1,10 +1,20 @@
 
+var navLinks = document.querySelectorAll("nav a");
+console.log('navLinks:', navLinks);
+for (var i = 0; i < navLinks.length; i++) {
+	var link = navLinks[i]
+	if (link.getAttribute('href') == window.location.pathname) {
+		link.classList.add("active");
+		break;
+	}
+}
+ 
 // Создаем коллекцию файлов:
 var dt = new DataTransfer();
 // dt.items.add(file);
 var file_list = dt.files;
 
-console.log('Коллекция файлов создана:');
+console.log('коллекция файлов создана:');
 console.dir(file_list);
 // Вставим созданную коллекцию в реальное поле:
 document.querySelector('input[type="file"]').files = file_list;
@@ -225,3 +235,6 @@ fileSelect.addEventListener(
   },
   false
 );
+
+
+ 

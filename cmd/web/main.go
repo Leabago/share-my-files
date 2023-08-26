@@ -8,6 +8,8 @@ import (
 	"os"
 	"share-my-file/pkg/models/operation"
 	"time"
+
+	"github.com/go-redis/redis"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -22,6 +24,8 @@ type application struct {
 	// debugLog *log.Logger
 
 	logger AppLogger
+
+	redisClient *redis.Client
 
 	files interface {
 		Insert()
@@ -41,6 +45,15 @@ type AppLogger struct {
 func main() {
 	fmt.Println("start app")
 
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	pong, err := redisClient.Ping().Result()
+	fmt.Println("ping", pong, err)
+
 	// create folder
 
 	logFormat := log.Ldate | log.Ltime | log.Lshortfile
@@ -55,9 +68,17 @@ func main() {
 	}
 
 	app := &application{
-		logger: logger,
-		files:  &operation.FileModel{},
+		logger:      logger,
+		files:       &operation.FileModel{},
+		redisClient: redisClient,
 	}
+
+	go func() {
+		for now := range time.Tick(time.Second * 10) {
+			fmt.Println(now, " statusUpdate())")
+			app.getAllFilesFromFolder()
+		}
+	}()
 
 	templateCache, err := app.newTemplateCache("./ui/html/")
 	if err != nil {

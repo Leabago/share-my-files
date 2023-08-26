@@ -49,6 +49,90 @@ func (app *application) createFoldeWithCoderForFiles(code string) string {
 	return path
 }
 
+func (app *application) fileExist(code string) bool {
+	fileName := folderPath + folderBegin + code + zipName
+	_, err := os.Open(fileName) // For read access.
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
+}
+
+func (app *application) getAllFilesFromFolder() {
+	f, err := os.Open(folderPath)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	files, err := f.Readdir(0)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	var asd string
+	asd = "asd"
+
+	fileNamesForDelete := make(map[string]bool) // New empty set
+
+	// for k := range set {         // Loop
+	// 	fmt.Println(k)
+	// }
+	// delete(set, "Foo")    // Delete
+	// size := len(set)      // Size
+	// exists := set["Foo"]  // Membership
+
+	fmt.Print(asd)
+
+	for _, v := range files {
+		fmt.Println(v.Name(), v.IsDir())
+		fileNamesForDelete[v.Name()] = true // Add
+	}
+
+	// get file name for saving
+	var availableFiles = app.getAvailableFiles()
+
+	// delete Available file from deleting list
+	for i, name := range availableFiles {
+		fmt.Println(i, name)
+		delete(fileNamesForDelete, name)
+	}
+
+	fmt.Println("fileNamesForDelete after:", fileNamesForDelete)
+
+	// delete file
+	for k := range fileNamesForDelete { // Loop
+		fmt.Println(k)
+		e := os.Remove(folderPath + k)
+		if e != nil {
+			log.Fatal(e)
+		}
+	}
+
+}
+
+func (app *application) getAvailableFiles() []string {
+
+	result, _ := app.redisClient.Keys("available:*").Result()
+
+	var availableFiles []string
+
+	fmt.Println("availableFiles:")
+	for i, s := range result {
+		// fmt.Println(i, s)
+
+		split := strings.Split(s, ":")
+		fmt.Println(i, s)
+		fmt.Println(split)
+		filename := folderBegin + split[1] + zipName
+		availableFiles = append(availableFiles, filename)
+	}
+
+	return availableFiles
+
+}
+
 func (app *application) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
 	// app.errorLog.Println(trace)

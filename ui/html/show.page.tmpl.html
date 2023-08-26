@@ -9,11 +9,28 @@
 <div class="file">
     <div class="metadata">
         <strong>{{.FolderCode}}</strong>
-    </div>  
+    </div>
 
-    <a href="/snippet/download/{{.FolderCode}}" download="proposed_file_name">Download</a>
+    <div>
+        <strong>{{.Exist}}</strong>
+    </div>
 
-    
+
+
+
+    {{if .Exist}}
+    <a href="/archive/download/{{.FolderCode}}">Download</a>
+    {{end}}
+
+
+    <!-- <a href="/archive/download/{{.FolderCode}}" download="proposed_file_name">Download</a> -->
+
+    <!-- {{if .Exist}}
+    <button type="button" onClick="window.location.reload()">
+        <a href="/archive/download/{{.FolderCode}}">Download</a>
+     </button>
+     {{end}} -->
+
 </div>
 {{end}}
 

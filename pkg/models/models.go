@@ -10,4 +10,5 @@ type File struct {
 	// gorm.Model
 	Name       string
 	FolderCode string
+	Exist      bool
 }
