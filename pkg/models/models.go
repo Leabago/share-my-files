@@ -8,7 +8,9 @@ type Product struct {
 
 type File struct {
 	// gorm.Model
-	Name       string
-	FolderCode string
-	Exist      bool
+	Name         string
+	FolderCode   string
+	Exist        bool
+	URL          string
+	QRcodeBase64 string
 }

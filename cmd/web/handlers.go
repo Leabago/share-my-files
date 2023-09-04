@@ -1,12 +1,15 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"share-my-file/pkg/forms"
 	"share-my-file/pkg/models"
 	"strconv"
 	"time"
+
+	qrcode "github.com/skip2/go-qrcode"
 )
 
 func ping(w http.ResponseWriter, r *http.Request) {
@@ -20,11 +23,21 @@ func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get(":id")
-	// fileExist := fileExist(code)
+	fullURL := r.Host + r.URL.Path
+
+	var png []byte
+	png, err := qrcode.Encode(fullURL, qrcode.Medium, 256)
+	if err != nil {
+		app.logger.infoLog.Println("cant create QRcode")
+	}
+
+	base64ImageData := base64.StdEncoding.EncodeToString(png)
 
 	var file = &models.File{
-		FolderCode: code,
-		Exist:      app.fileExist(code),
+		FolderCode:   code,
+		Exist:        app.fileExist(code),
+		URL:          fullURL,
+		QRcodeBase64: base64ImageData,
 	}
 
 	// s, err := app.files.Get()
@@ -61,7 +74,6 @@ func (app *application) getSnippet(w http.ResponseWriter, r *http.Request) {
 	// app.render(w, r, "show.page.tmpl.html", &templateData{
 	// 	File: file,
 	// })
-	app.logger.infoLog.Printf("getSnippet, fileExist:", app.fileExist(code))
 
 	if app.fileExist(code) {
 

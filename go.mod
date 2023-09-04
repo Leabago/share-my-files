@@ -15,4 +15,5 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.27.10 // indirect
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 )
