@@ -13,4 +13,5 @@ type File struct {
 	Exist        bool
 	URL          string
 	QRcodeBase64 string
+	FileNameList []string
 }

@@ -7,7 +7,6 @@ import (
 	"share-my-file/pkg/forms"
 	"share-my-file/pkg/models"
 	"strconv"
-	"time"
 
 	qrcode "github.com/skip2/go-qrcode"
 )
@@ -30,14 +29,17 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.logger.infoLog.Println("cant create QRcode")
 	}
-
 	base64ImageData := base64.StdEncoding.EncodeToString(png)
+
+	fileNameList := app.redisClient.LRange(app.getAvailableKey(code), 0, -1).Val()
+	fmt.Println("fileNames:", fileNameList)
 
 	var file = &models.File{
 		FolderCode:   code,
 		Exist:        app.fileExist(code),
 		URL:          fullURL,
 		QRcodeBase64: base64ImageData,
+		FileNameList: fileNameList,
 	}
 
 	// s, err := app.files.Get()
@@ -95,12 +97,26 @@ func (app *application) homeGetFiles(w http.ResponseWriter, r *http.Request) {
 	var zipFileName = app.createFoldeWithCoderForFiles(code)
 	app.logger.infoLog.Printf("create new folder %s", zipFileName)
 
-	asd := app.redisClient.Set(("available:" + code), "1", 1*time.Minute)
+	// asd := app.redisClient.Set(("available:" + code), "1", 1*time.Minute)
+	// fmt.Println("redis set")
+	// fmt.Println(asd.Result())
+
+	fileNameList, _ := ParseMediaType(r, zipFileName)
+	fmt.Println("fileNameList: ", fileNameList)
+
+	// asd := app.redisClient.Set(("available:" + code), "1", 1*time.Minute)
+
+	asd := app.redisClient.RPush((app.getAvailableKey(code)), fileNameList)
+	app.redisClient.Expire(app.getAvailableKey(code), smallTime).Result()
+
 	fmt.Println("redis set")
 	fmt.Println(asd.Result())
 
-	ParseMediaType(r, zipFileName)
 	http.Redirect(w, r, fmt.Sprintf("/archive/%s", code), http.StatusSeeOther)
+}
+
+func (app *application) getAvailableKey(code string) string {
+	return available + code
 }
 
 func (app *application) redirectToArchive(w http.ResponseWriter, r *http.Request) {
@@ -126,6 +142,7 @@ func (application *application) redirectHome(w http.ResponseWriter, r *http.Requ
 
 func check(e error) {
 	if e != nil {
+		fmt.Println("panic panic")
 		panic(e)
 	}
 }

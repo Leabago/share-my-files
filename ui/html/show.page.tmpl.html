@@ -41,6 +41,15 @@
     {{end}}
 
 
+    <div>
+        <ul>
+            {{ range .FileNameList }}
+            <li>{{ . }}</li>
+            {{ end }}
+        </ul>
+        `
+    </div>
+
     <!-- <a href="/archive/download/{{.FolderCode}}" download="proposed_file_name">Download</a> -->
 
     <!-- {{if .Exist}}

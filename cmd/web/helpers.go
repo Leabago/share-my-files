@@ -213,7 +213,9 @@ func (app *application) addDefaultData(td *templateData, r *http.Request) *templ
 	return td
 }
 
-func ParseMediaType(r *http.Request, zipFileName string) error {
+func ParseMediaType(r *http.Request, zipFileName string) ([]string, error) {
+
+	var fileNameList []string
 
 	file, err := os.Create(zipFileName)
 	if err != nil {
@@ -232,10 +234,11 @@ func ParseMediaType(r *http.Request, zipFileName string) error {
 	}
 	if mediaType == "multipart/form-data" {
 		mr := multipart.NewReader(r.Body, params["boundary"])
+
 		for {
 			p, err := mr.NextPart()
 			if err == io.EOF {
-				return nil
+				return fileNameList, nil
 			}
 			if err != nil {
 				fmt.Println(err)
@@ -265,10 +268,15 @@ func ParseMediaType(r *http.Request, zipFileName string) error {
 				log.Fatal(err)
 			}
 
+			fileNameList = append(fileNameList, p.FileName())
+			fmt.Printf("FileName %s: \n", p.FileName())
+			fmt.Printf("fileNameList 1 %s: \n", fileNameList)
 			check(err)
-
 		}
+
 	}
 
-	return nil
+	fmt.Printf("fileNameList 2 %s: \n", fileNameList)
+	return nil, nil
+
 }
