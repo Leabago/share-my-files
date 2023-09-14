@@ -112,7 +112,9 @@ func (app *application) homeGetFiles(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("redis set")
 	fmt.Println(asd.Result())
 
-	http.Redirect(w, r, fmt.Sprintf("/archive/%s", code), http.StatusSeeOther)
+	w.Write([]byte(code))
+
+	// http.Redirect(w, r, fmt.Sprintf("/archive/%s", code), http.StatusSeeOther)
 }
 
 func (app *application) getAvailableKey(code string) string {

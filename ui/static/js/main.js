@@ -13,6 +13,8 @@ for (var i = 0; i < navLinks.length; i++) {
 var dt = new DataTransfer();
 // dt.items.add(file);
 var file_list = dt.files;
+const formData = new FormData();
+
 
 console.log('коллекция файлов создана:');
 console.dir(file_list);
@@ -168,11 +170,30 @@ function setName(name){
 
 
 function validateMyForm() {
+	event.preventDefault();
+
+
   const K = 1024
   let numberOfBytes = 0;
   for (const file of dt.files) {
 	numberOfBytes += file.size;
+	formData.append("files", file);
   }
+ 
+ 
+  fetch("https://localhost:8080/upload", {
+	method: "post",
+	body: formData,
+})
+.catch((error) => ("Something went wrong!", error))
+.then((response) => response.text().then(function (text) {
+	 console.log("response text: " + text)
+	 window.location.href = "https://localhost:8080/archive/" + text;
+  }))
+ 
+
+ 
+
 
   if (numberOfBytes <= K ** 3) {
 	// alert("validations passed");

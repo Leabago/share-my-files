@@ -230,6 +230,7 @@ func ParseMediaType(r *http.Request, zipFileName string) ([]string, error) {
 
 	mediaType, params, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil {
+		fmt.Println("Content-Type missing")
 		log.Fatal(err)
 	}
 	if mediaType == "multipart/form-data" {
