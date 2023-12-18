@@ -197,6 +197,9 @@ function validateMyForm() {
 
   if (numberOfBytes <= K ** 3) {
 	// alert("validations passed");
+
+	document.getElementById("submit").disabled = true
+
 	return true;
 
 
