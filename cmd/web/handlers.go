@@ -101,7 +101,7 @@ func (app *application) homeGetFiles(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println("redis set")
 	// fmt.Println(asd.Result())
 
-	fileNameList, _ := ParseMediaType(r, zipFileName)
+	fileNameList, err := ParseMediaType(r, zipFileName, app.maxFileSize)
 	fmt.Println("fileNameList: ", fileNameList)
 
 	// asd := app.redisClient.Set(("available:" + code), "1", 1*time.Minute)
@@ -112,9 +112,21 @@ func (app *application) homeGetFiles(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("redis set")
 	fmt.Println(asd.Result())
 
-	w.Write([]byte(code))
+	// w.Write([]byte(code))
 
-	// http.Redirect(w, r, fmt.Sprintf("/archive/%s", code), http.StatusSeeOther)
+	var titleName = "title"
+
+	if err != nil {
+		form := forms.New(nil)
+		form.Errors.Add(titleName, err.Error())
+
+		app.render(w, r, "create.page.tmpl.html", &templateData{
+			Form: form,
+		})
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/archive/%s", code), http.StatusSeeOther)
 }
 
 func (app *application) getAvailableKey(code string) string {
@@ -137,6 +149,15 @@ func (app *application) redirectToArchive(w http.ResponseWriter, r *http.Request
 func (app *application) createDownloadForm(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "download.page.tmpl.html", &templateData{})
 }
+
+// func (app *application) getMaxFileSize(w http.ResponseWriter, r *http.Request) {
+// 	jsonResp, err := json.Marshal(app.fileSize)
+// 	if err != nil {
+// 		app.logger.errorLog.Fatal(err)
+// 	}
+// 	w.Write(jsonResp)
+// 	return
+// }
 
 func (application *application) redirectHome(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/upload", http.StatusSeeOther)

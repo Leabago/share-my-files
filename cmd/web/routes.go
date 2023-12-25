@@ -27,6 +27,7 @@ func (app *application) routes() http.Handler {
 	mux.Get("/archive/download/:id", dynamicMiddleware.ThenFunc(app.getSnippet))
 
 	mux.Get("/download", dynamicMiddleware.ThenFunc(app.createDownloadForm))
+	// mux.Get("/maxfilesize", dynamicMiddleware.ThenFunc(app.getMaxFileSize))
 
 	// ping
 	mux.Get("/ping", http.HandlerFunc(ping))

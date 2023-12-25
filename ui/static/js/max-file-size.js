@@ -1,0 +1,1 @@
+var maxFileSize = 100;

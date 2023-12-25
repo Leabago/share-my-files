@@ -34,6 +34,8 @@ type application struct {
 	}
 
 	templateCache map[string]*template.Template
+
+	maxFileSize int
 }
 
 type AppLogger struct {
@@ -67,10 +69,16 @@ func main() {
 		errorLog: errorLog,
 	}
 
+	createFolderForFiles(folderPath, logger)
+	createFolderForFiles(configFolderPath, logger)
+	writeFileSize2(logger)
+	// createFolderForFiles("./ui/static/js", logger)
+
 	app := &application{
 		logger:      logger,
 		files:       &operation.FileModel{},
 		redisClient: redisClient,
+		maxFileSize: writeFileSize2(logger),
 	}
 
 	go func() {
@@ -87,7 +95,6 @@ func main() {
 	app.templateCache = templateCache
 	// APP_PORT := getEnv("APP_PORT", logger)
 	APP_PORT := ":8080"
-	createFolderForFiles(logger)
 
 	srv := &http.Server{
 		Handler: app.routes(),
