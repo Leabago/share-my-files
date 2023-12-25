@@ -2,6 +2,7 @@
 var approximateMaxFileSize = approximate(maxFileSize);
 document.getElementById("maxFileSize").textContent = approximateMaxFileSize;
 const bigFileMessage = "File size is too large, no more than " + approximateMaxFileSize + "megabytes allowed";
+const minFileMessage = "Please upload the file";
 const maxFileNameSize = 30
 
 var navLinks = document.querySelectorAll("nav a");
@@ -48,6 +49,9 @@ input.addEventListener("change", (event) => {
 
 
 function updateAll() {
+	var submit = document.getElementById("submit")
+	submit.disabled = true;
+
 	//delete the parent li
 	var ul = document.getElementById("output");
 	while (ul.firstChild) ul.removeChild(ul.firstChild);
@@ -105,15 +109,30 @@ function updateAll() {
 	var outputSize = approximate(numberOfBytes)
 	document.getElementById("fileSize").textContent = outputSize;
 	// size 
+ 
+
+	checkSize(numberOfBytes)
+}
+
+function checkSize(numberOfBytes){
+	var checkMaxSize = numberOfBytes <= maxFileSize
+	var checkMinSize = numberOfBytes > 0
 	var submit = document.getElementById("submit")
+	var errors =  document.getElementById("errors")
 
 	// check
-	if (numberOfBytes <= maxFileSize) {
-		document.getElementById("errors").textContent = "";
+	if ( checkMaxSize &&  checkMinSize) {
+		errors.textContent = "";
 		submit.disabled = false;
+		return true;
 	} else {
-		document.getElementById("errors").textContent = bigFileMessage;
+		if (!checkMaxSize){
+			errors.textContent = bigFileMessage;
+		} else if (!checkMinSize) {
+			errors.textContent = minFileMessage;
+		}	
 		submit.disabled = true;
+		return false;
 	}
 }
 
@@ -158,18 +177,19 @@ function setName(name) {
 }
 
 function validateMyForm() {
+
+	var submit = document.getElementById("submit")
+	submit.disabled = true;
+
 	const K = 1024
 	let numberOfBytes = 0;
 	for (const file of dt.files) {
 		numberOfBytes += file.size;
 		formData.append("files", file);
 	}
+ 
 
-	if (numberOfBytes <= maxFileSize) {	
-		return true;
-	} else {		
-		return false;
-	}
+	return checkSize(numberOfBytes)
 }
 
 function dropHandler(ev) {

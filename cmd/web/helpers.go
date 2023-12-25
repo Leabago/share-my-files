@@ -276,13 +276,12 @@ func ParseMediaType(r *http.Request, zipFileName string, maxFileSize int) ([]str
 			fileNameList = append(fileNameList, p.FileName())
 
 			// if szie of files bigger then
-			if sumSize > (maxFileSize) {
-				var err error = errors.New("big file")
+			if sumSize > maxFileSize {
+				var err error = errors.New(fmt.Sprintf(bigFileMessage, maxFileSize))
 				fmt.Println("ParseMediaType: error5: ", err)
 				return nil, err
 			}
 
-			fmt.Println("check sumSize:", sumSize > (maxFileSize-98))
 		}
 	}
 

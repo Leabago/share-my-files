@@ -17,3 +17,6 @@ const bigTime = 12 * time.Hour
 const maxFileSize = 104857600
 const maxFileSizeFileName = "max-file-size.js"
 const maxFileSizeRegex = `^var maxFileSize = (\d*);$`
+
+// errors
+const bigFileMessage = "File size is too large, no more than %d megabytes allowed" // maxFileSize

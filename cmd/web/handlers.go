@@ -112,6 +112,7 @@ func (app *application) homeGetFiles(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("redis set")
 	fmt.Println(asd.Result())
 
+	fmt.Println(err)
 	// w.Write([]byte(code))
 
 	var titleName = "title"

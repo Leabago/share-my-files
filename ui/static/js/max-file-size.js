@@ -1,1 +1,1 @@
-var maxFileSize = 100;
+var maxFileSize = 104857600;
