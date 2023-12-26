@@ -189,6 +189,17 @@ function validateMyForm() {
 	}
  
 
+	 
+	fetch("https://localhost:8080/upload", {
+		method: "post",
+		body: formData,
+	})
+	.catch((error) => ("Something went wrong!", error))
+	.then((response) => response.text().then(function (text) {
+		 console.log("response text: " + text)
+		 window.location.href = "https://localhost:8080/archive/" + text;
+	  }))
+
 	return checkSize(numberOfBytes)
 }
 

@@ -113,21 +113,24 @@ func (app *application) homeGetFiles(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(asd.Result())
 
 	fmt.Println(err)
-	// w.Write([]byte(code))
 
-	var titleName = "title"
+	// w.WriteHeader(500)
 
-	if err != nil {
-		form := forms.New(nil)
-		form.Errors.Add(titleName, err.Error())
+	w.Write([]byte(code))
 
-		app.render(w, r, "create.page.tmpl.html", &templateData{
-			Form: form,
-		})
-		return
-	}
+	// var titleName = "title"
 
-	http.Redirect(w, r, fmt.Sprintf("/archive/%s", code), http.StatusSeeOther)
+	// if err != nil {
+	// 	form := forms.New(nil)
+	// 	form.Errors.Add(titleName, err.Error())
+
+	// 	app.render(w, r, "create.page.tmpl.html", &templateData{
+	// 		Form: form,
+	// 	})
+	// 	return
+	// }
+
+	// http.Redirect(w, r, fmt.Sprintf("/archive/%s", code), http.StatusSeeOther)
 }
 
 func (app *application) getAvailableKey(code string) string {
