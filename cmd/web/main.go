@@ -71,14 +71,14 @@ func main() {
 
 	createFolderForFiles(folderPath, logger)
 	createFolderForFiles(configFolderPath, logger)
-	writeFileSize2(logger)
+	writeFileSize(logger)
 	// createFolderForFiles("./ui/static/js", logger)
 
 	app := &application{
 		logger:      logger,
 		files:       &operation.FileModel{},
 		redisClient: redisClient,
-		maxFileSize: writeFileSize2(logger),
+		maxFileSize: writeFileSize(logger),
 	}
 
 	go func() {

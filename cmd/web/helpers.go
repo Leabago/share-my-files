@@ -3,11 +3,9 @@ package main
 import (
 	"archive/zip"
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"mime"
@@ -16,7 +14,6 @@ import (
 	"os"
 	"regexp"
 	"runtime/debug"
-	"share-my-file/pkg/models"
 	"strconv"
 	"strings"
 	"time"
@@ -291,46 +288,7 @@ func ParseMediaType(r *http.Request, zipFileName string, maxFileSize int) ([]str
 
 }
 
-func writeFileSize(logger AppLogger) models.FileSize {
-	fileName := configFolderPath + maxFileSizeFileName
-	//...................................
-	//Writing struct type to a JSON file
-	//...................................
-
-	// if file not exist
-	if _, err := os.Stat(fileName); err != nil {
-		fIleSize := models.FileSize{}
-		fIleSize.Size = maxFileSize
-		content, err := json.Marshal(fIleSize)
-		if err != nil {
-			fmt.Println(err)
-		}
-		err = ioutil.WriteFile(fileName, content, 0644)
-		if err != nil {
-			logger.errorLog.Fatal(err)
-		}
-
-		return fIleSize
-	} else {
-		fIleSize := models.FileSize{}
-		// read json file
-		jsonFile, err := os.Open(fileName)
-		// if we os.Open returns an error then handle it
-		if err != nil {
-			logger.errorLog.Fatal(err)
-		}
-		fmt.Println("Successfully Opened ", fileName)
-		// defer the closing of our jsonFile so that we can parse it later on
-		defer jsonFile.Close()
-
-		// read our opened jsonFile as a byte array.
-		byteValue, _ := ioutil.ReadAll(jsonFile)
-		json.Unmarshal(byteValue, &fIleSize)
-		return fIleSize
-	}
-}
-
-func writeFileSize2(logger AppLogger) int {
+func writeFileSize(logger AppLogger) int {
 	fileName := configFolderPath + maxFileSizeFileName
 	//...................................
 	//Writing struct type to a JSON file
