@@ -97,24 +97,12 @@ func (app *application) homeGetFiles(w http.ResponseWriter, r *http.Request) {
 	var zipFileName = app.createFoldeWithCoderForFiles(code)
 	app.logger.infoLog.Printf("create new folder %s", zipFileName)
 
-	// asd := app.redisClient.Set(("available:" + code), "1", 1*time.Minute)
-	// fmt.Println("redis set")
-	// fmt.Println(asd.Result())
+	fileNameList, _ := ParseMediaType(r, zipFileName, app.maxFileSize)
 
-	fileNameList, _ := ParseMediaType(r, zipFileName)
-	fmt.Println("fileNameList: ", fileNameList)
-
-	// asd := app.redisClient.Set(("available:" + code), "1", 1*time.Minute)
-
-	asd := app.redisClient.RPush((app.getAvailableKey(code)), fileNameList)
+	app.redisClient.RPush((app.getAvailableKey(code)), fileNameList)
 	app.redisClient.Expire(app.getAvailableKey(code), smallTime).Result()
 
-	fmt.Println("redis set")
-	fmt.Println(asd.Result())
-
 	w.Write([]byte(code))
-
-	// http.Redirect(w, r, fmt.Sprintf("/archive/%s", code), http.StatusSeeOther)
 }
 
 func (app *application) getAvailableKey(code string) string {

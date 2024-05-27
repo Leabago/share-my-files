@@ -15,3 +15,7 @@ type File struct {
 	QRcodeBase64 string
 	FileNameList []string
 }
+
+type FileSize struct {
+	Size int `json:"size"`
+}

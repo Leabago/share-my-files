@@ -12,7 +12,9 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"regexp"
 	"runtime/debug"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -26,7 +28,7 @@ func getEnv(name string, logger AppLogger) string {
 	return varEnv
 }
 
-func createFolderForFiles(logger AppLogger) {
+func createFolderForFiles(folderPath string, logger AppLogger) {
 	if err := os.Mkdir(folderPath, os.ModePerm); err != nil {
 		if errors.Is(err, os.ErrExist) {
 			// file exist
@@ -213,13 +215,13 @@ func (app *application) addDefaultData(td *templateData, r *http.Request) *templ
 	return td
 }
 
-func ParseMediaType(r *http.Request, zipFileName string) ([]string, error) {
-
+func ParseMediaType(r *http.Request, zipFileName string, maxFileSize int) ([]string, error) {
 	var fileNameList []string
 
 	file, err := os.Create(zipFileName)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("ParseMediaType: os.Create(zipFileName):", err)
+		return nil, err
 	}
 	defer file.Close()
 
@@ -230,54 +232,104 @@ func ParseMediaType(r *http.Request, zipFileName string) ([]string, error) {
 
 	mediaType, params, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil {
-		fmt.Println("Content-Type missing")
-		log.Fatal(err)
+		fmt.Println("ParseMediaType:  Content-Type missing: ", err)
+		return nil, err
 	}
 	if mediaType == "multipart/form-data" {
 		mr := multipart.NewReader(r.Body, params["boundary"])
+		sumSize := 0
 
 		for {
 			p, err := mr.NextPart()
 			if err == io.EOF {
+				fmt.Println("ParseMediaType: ok: ", err)
 				return fileNameList, nil
 			}
 			if err != nil {
-				fmt.Println(err)
-				log.Fatal(err)
-
+				fmt.Println("ParseMediaType: error1: ", err)
+				return nil, err
 			}
 			slurp, err := io.ReadAll(p)
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println("ParseMediaType: error2: ", err)
+				return nil, err
 			}
-			// fmt.Printf("Part %q: %q\n", p.Header.Get("Foo"), slurp)
-
-			// fmt.Printf("FileName %s: \n", p.FileName())
-
-			// path := folder + p.FileName()
-			// err = os.WriteFile(path, slurp, 0644)
 
 			// Add a file to the zip file
 			f, err := wr.Create(p.FileName())
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println("ParseMediaType: error3: ", err)
+				return nil, err
 			}
 
 			// Write data to the file
-			_, err = f.Write(slurp)
+			sizeOfslurp, err := f.Write(slurp)
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println("ParseMediaType: error4: ", err)
+				return nil, err
 			}
 
+			sumSize += sizeOfslurp
 			fileNameList = append(fileNameList, p.FileName())
-			fmt.Printf("FileName %s: \n", p.FileName())
-			fmt.Printf("fileNameList 1 %s: \n", fileNameList)
-			check(err)
-		}
 
+			// if szie of files bigger then
+			if sumSize > maxFileSize {
+				var err error = errors.New(fmt.Sprintf(bigFileMessage, maxFileSize))
+				fmt.Println("ParseMediaType: error5: ", err)
+				return nil, err
+			}
+
+		}
 	}
 
-	fmt.Printf("fileNameList 2 %s: \n", fileNameList)
-	return nil, nil
+	err = errors.New("mus be multipart")
+	fmt.Println("ParseMediaType: error6: ", err)
+	return nil, err
 
+}
+
+func writeFileSize(logger AppLogger) int {
+	fileName := configFolderPath + maxFileSizeFileName
+	//...................................
+	//Writing struct type to a JSON file
+	//...................................
+
+	// if file not exist, then create it with default values
+	if _, err := os.Stat(fileName); err != nil {
+		// fill deafault maxFileSize
+		var data []byte = []byte("var maxFileSize = " + strconv.Itoa(maxFileSize) + ";")
+
+		err = os.WriteFile(fileName, data, 0644)
+		if err != nil {
+			logger.errorLog.Fatal(err)
+		}
+
+		return maxFileSize
+	} else {
+		// read from existing file
+
+		// read json file
+		file, err := os.Open(fileName)
+		// if we os.Open returns an error then handle it
+		if err != nil {
+			logger.errorLog.Fatal(err)
+		}
+		fmt.Println("Successfully Opened ", fileName)
+		// defer the closing of our jsonFile so that we can parse it later on
+		defer file.Close()
+
+		// read our opened jsonFile as a byte array.
+		byteValue, _ := io.ReadAll(file)
+		var stringFromFile = string(byteValue)
+		re, _ := regexp.Compile(maxFileSizeRegex)
+		// find size
+		match := re.FindStringSubmatch(stringFromFile)
+
+		i, err := strconv.Atoi(match[1])
+
+		if err != nil {
+			logger.errorLog.Fatal(err)
+		}
+		return i
+	}
 }
