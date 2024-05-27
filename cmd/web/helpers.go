@@ -336,25 +336,19 @@ func writeFileSize2(logger AppLogger) int {
 	//Writing struct type to a JSON file
 	//...................................
 
-	// if file not exist
+	// if file not exist, then create it with default values
 	if _, err := os.Stat(fileName); err != nil {
-		// fIleSize := models.FileSize{}
-		// fIleSize.Size = maxFileSize
-		// content, err := json.Marshal(fIleSize)
-		// if err != nil {
-		// 	fmt.Println(err)
-		// }
-
+		// fill deafault maxFileSize
 		var data []byte = []byte("var maxFileSize = " + strconv.Itoa(maxFileSize) + ";")
 
-		err = ioutil.WriteFile(fileName, data, 0644)
+		err = os.WriteFile(fileName, data, 0644)
 		if err != nil {
 			logger.errorLog.Fatal(err)
 		}
 
 		return maxFileSize
-
 	} else {
+		// read from existing file
 
 		// read json file
 		file, err := os.Open(fileName)
@@ -367,13 +361,17 @@ func writeFileSize2(logger AppLogger) int {
 		defer file.Close()
 
 		// read our opened jsonFile as a byte array.
-		byteValue, _ := ioutil.ReadAll(file)
+		byteValue, _ := io.ReadAll(file)
 		var stringFromFile = string(byteValue)
 		re, _ := regexp.Compile(maxFileSizeRegex)
 		// find size
 		match := re.FindStringSubmatch(stringFromFile)
-		fmt.Println("match: ", match[1])
+
 		i, err := strconv.Atoi(match[1])
+
+		if err != nil {
+			logger.errorLog.Fatal(err)
+		}
 		return i
 	}
 }
