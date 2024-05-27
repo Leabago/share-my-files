@@ -90,18 +90,20 @@ func (app *application) getSnippet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// homeGetFiles upload files to zip
 func (app *application) homeGetFiles(w http.ResponseWriter, r *http.Request) {
-
 	// get folder name
 	var code = createUserCode()
-	var zipFileName = app.createFoldeWithCoderForFiles(code)
+	var zipFileName = folderPath + folderBegin + code + zipName
 	app.logger.infoLog.Printf("create new folder %s", zipFileName)
+	fileNameList, err := ParseMediaType(r, zipFileName, app.maxFileSize)
+	if err != nil {
+		app.serverError(w, err)
+	}
 
-	fileNameList, _ := ParseMediaType(r, zipFileName, app.maxFileSize)
-
+	// send key to redis. key is going to expire
 	app.redisClient.RPush((app.getAvailableKey(code)), fileNameList)
 	app.redisClient.Expire(app.getAvailableKey(code), smallTime).Result()
-
 	w.Write([]byte(code))
 }
 

@@ -38,19 +38,6 @@ func createFolderForFiles(folderPath string, logger AppLogger) {
 	}
 }
 
-func (app *application) createFoldeWithCoderForFiles(code string) string {
-	var path = folderPath + folderBegin + code + zipName
-	// if err := os.Mkdir(path, os.ModePerm); err != nil {
-	// 	if errors.Is(err, os.ErrExist) {
-	// 		// file exist
-	// 	} else {
-	// 		app.logger.errorLog.Fatal(err)
-	// 	}
-	// }
-
-	return path
-}
-
 func (app *application) fileExist(code string) bool {
 	fileName := folderPath + folderBegin + code + zipName
 	_, err := os.Open(fileName) // For read access.
@@ -61,34 +48,22 @@ func (app *application) fileExist(code string) bool {
 	}
 }
 
-func (app *application) getAllFilesFromFolder() {
+// removeNotAvaliableFiles get keys from redis and delete expired files
+func (app *application) removeNotAvaliableFiles() {
 	f, err := os.Open(folderPath)
 	if err != nil {
-		fmt.Println(err)
+		app.logger.errorLog.Fatal(err)
 		return
 	}
 	files, err := f.Readdir(0)
 	if err != nil {
-		fmt.Println(err)
+		app.logger.errorLog.Fatal(err)
 		return
 	}
 
-	var asd string
-	asd = "asd"
-
 	fileNamesForDelete := make(map[string]bool) // New empty set
 
-	// for k := range set {         // Loop
-	// 	fmt.Println(k)
-	// }
-	// delete(set, "Foo")    // Delete
-	// size := len(set)      // Size
-	// exists := set["Foo"]  // Membership
-
-	fmt.Print(asd)
-
 	for _, v := range files {
-		fmt.Println(v.Name(), v.IsDir())
 		fileNamesForDelete[v.Name()] = true // Add
 	}
 
@@ -96,43 +71,43 @@ func (app *application) getAllFilesFromFolder() {
 	var availableFiles = app.getAvailableFiles()
 
 	// delete Available file from deleting list
-	for i, name := range availableFiles {
-		fmt.Println(i, name)
+	for _, name := range availableFiles {
 		delete(fileNamesForDelete, name)
 	}
 
-	fmt.Println("fileNamesForDelete after:", fileNamesForDelete)
-
 	// delete file
 	for k := range fileNamesForDelete { // Loop
-		fmt.Println(k)
 		e := os.Remove(folderPath + k)
 		if e != nil {
 			log.Fatal(e)
 		}
 	}
 
+	// app.logger.infoLog.Println("files to be deleted: ", fileNamesForDelete)
 }
 
-func (app *application) getAvailableFiles() []string {
+func (app *application) deleteFileEveryNsec(second time.Duration) {
+	ticker := time.NewTicker(time.Second * second)
+	defer ticker.Stop()
+	for ; true; <-ticker.C {
+		app.removeNotAvaliableFiles()
+	}
+}
 
+// getAvailableFiles returen all folders(key) wich are not expire
+func (app *application) getAvailableFiles() []string {
+	// get all keys from redis
 	result, _ := app.redisClient.Keys("available:*").Result()
 
 	var availableFiles []string
-
-	fmt.Println("availableFiles:")
-	for i, s := range result {
-		// fmt.Println(i, s)
-
+	for _, s := range result {
 		split := strings.Split(s, ":")
-		fmt.Println(i, s)
-		fmt.Println(split)
 		filename := folderBegin + split[1] + zipName
 		availableFiles = append(availableFiles, filename)
 	}
 
+	// app.logger.infoLog.Println("all available folders:", availableFiles)
 	return availableFiles
-
 }
 
 func (app *application) serverError(w http.ResponseWriter, err error) {
@@ -180,8 +155,8 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 	buf.WriteTo(w)
 }
 
+// createUserCode create random code
 func createUserCode() string {
-	rand.Seed(time.Now().UnixNano())
 	chars := []rune(
 		"abcdefghijklmnopqrstuvwxyz" +
 			"0123456789")

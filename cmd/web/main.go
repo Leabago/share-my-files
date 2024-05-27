@@ -12,17 +12,9 @@ import (
 	"github.com/go-redis/redis"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
-
-	asd := []byte("asd")
-	w.Write(asd)
-}
+const APP_PORT = ":8080"
 
 type application struct {
-	// infoLog  *log.Logger
-	// errorLog *log.Logger
-	// debugLog *log.Logger
-
 	logger AppLogger
 
 	redisClient *redis.Client
@@ -54,9 +46,7 @@ func main() {
 	})
 
 	pong, err := redisClient.Ping().Result()
-	fmt.Println("ping", pong, err)
-
-	// create folder
+	fmt.Println("ping redis", pong, err)
 
 	logFormat := log.Ldate | log.Ltime | log.Lshortfile
 	infoLog := log.New(os.Stdout, "INFO\t", logFormat)
@@ -68,11 +58,10 @@ func main() {
 		debugLog: debugLog,
 		errorLog: errorLog,
 	}
-
+	// create folders
 	createFolderForFiles(folderPath, logger)
 	createFolderForFiles(configFolderPath, logger)
 	writeFileSize(logger)
-	// createFolderForFiles("./ui/static/js", logger)
 
 	app := &application{
 		logger:      logger,
@@ -81,20 +70,14 @@ func main() {
 		maxFileSize: writeFileSize(logger),
 	}
 
-	go func() {
-		for now := range time.Tick(time.Second * 10) {
-			fmt.Println(now, " statusUpdate())")
-			app.getAllFilesFromFolder()
-		}
-	}()
+	// delete files every 10 seconds
+	go app.deleteFileEveryNsec(10)
 
 	templateCache, err := app.newTemplateCache("./ui/html/")
 	if err != nil {
 		errorLog.Fatal(err)
 	}
 	app.templateCache = templateCache
-	// APP_PORT := getEnv("APP_PORT", logger)
-	APP_PORT := ":8080"
 
 	srv := &http.Server{
 		Handler: app.routes(),
