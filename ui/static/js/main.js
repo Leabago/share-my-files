@@ -15,6 +15,10 @@ for (var i = 0; i < navLinks.length; i++) {
 	}
 }
 
+var submit = document.getElementById("submit")
+submit.disabled = true;
+
+
 // Создаем коллекцию файлов:
 var dt = new DataTransfer();
 var file_list = dt.files;
