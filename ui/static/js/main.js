@@ -182,6 +182,8 @@ function setName(name) {
 
 function validateMyForm() {
 
+	console.log("")
+
 	var submit = document.getElementById("submit")
 	submit.disabled = true;
 
@@ -204,7 +206,6 @@ function validateMyForm() {
 		 window.location.href = "https://localhost:8080/archive/" + text;
 	  }))
 
-	return checkSize(numberOfBytes)
 }
 
 function dropHandler(ev) {
