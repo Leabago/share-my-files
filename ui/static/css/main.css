@@ -1,8 +1,4 @@
-
 #drop_zone {
-  border: 1px solid blue;
-  /* width: 400px; */
-  /* width: 50%; */
   height: 400px;
 }
 
@@ -40,19 +36,19 @@
 
 #file_name {
   width: 20%;
-white-space: nowrap;
-overflow: hidden;
-text-overflow: ellipsis ;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
- 
+
 /*  */
 #tooltip {
   position: relative;
   display: inline-block;
 }
 
- #myTooltip {
+#myTooltip {
   visibility: hidden;
   width: 140px;
   background-color: #555;
@@ -69,7 +65,7 @@ text-overflow: ellipsis ;
   transition: opacity 0.3s;
 }
 
- #myTooltip::after {
+#myTooltip::after {
   content: "";
   position: absolute;
   top: 100%;

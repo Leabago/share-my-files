@@ -2,15 +2,16 @@
 {{define "title"}}Snippet{{end}}
 {{define "main"}}
 
-<form action="/archive/null" method="get" id="formFindArchive" onsubmit="handleClick()">
-    <div>
-        <label>Title:</label>
-        <input type='text' name='find' id="archiveId" required minlength="6" maxlength="6">
-        <input type="submit" value="Find" id="submitArchiveId" />
-    </div>
-</form>
+<div class="container">
 
-
+    <form action="/archive/null" method="get" id="formFindArchive" onsubmit="handleClick()">
+        <div align="center">
+            <label>Please write the file code: </label>
+            <input type='text' name='find' id="archiveId" required minlength="6" maxlength="6">
+            <input type="submit" value="Find" id="submitArchiveId" />
+        </div>
+    </form>
+</div>
 
 <script>
     function handleClick() {
@@ -22,7 +23,6 @@
         const archiveId = document.getElementById("archiveId").value;
         window.location = "/archive/" + archiveId
     }
-
 
 </script>
 {{end}}

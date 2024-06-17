@@ -1,65 +1,52 @@
 {{template "base" .}}
 {{define "title"}}Snippet{{end}}
 {{define "main"}}
-<p>
-    show page
-</p>
 
 {{with .File}}
-<div class="file">
-    <div class="metadata">
-        <strong>{{.FolderCode}}</strong>
+<div class="container">
+
+    {{if not .Exist}}
+    <div class="row">
+        <div class="col" align="center">
+            <h2>File not exist</h2>
+        </div>
     </div>
+    {{else}}
+    <div class="row">
+        <div class="col">
+            <h1>File code: <strong>{{.FolderCode}}</strong></h1>
+            <!-- <h4>list of files:</h4> -->
+            <ul class="ul">
+                {{ range .FileNameList }}
+                <li>{{ . }}</li>
+                {{ end }}
+            </ul>
+        </div>
 
-    <div>
-        <strong>{{.Exist}}</strong>
+        <div class="col-6" align="left">
+            <br>
+            <a href="/archive/download/{{.FolderCode}}">
+                <button type="button" class="btn btn-success">Download</button>
+            </a>
+            <br>
+            <br>
+            <div>
+                <input type="url" value={{.URL}} id="myInput" readonly>
+
+                <div id="tooltip">
+                    <button onclick="myFunction()" onmouseout="outFunc()">
+                        <span class="tooltiptext" id="myTooltip">Copy to clipboard</span>
+                        Copy text
+                    </button>
+                </div>
+            </div>
+            <br>
+            <img src="data:image/png;base64,{{.QRcodeBase64}}" />
+        </div>
     </div>
-
-    <div>
-        <strong>{{.URL}}</strong>
-    </div>
-
-    <!-- The text field -->
-    <input type="url" value={{.URL}} id="myInput" readonly>
-
-    <div id="tooltip">
-        <button onclick="myFunction()" onmouseout="outFunc()">
-            <span class="tooltiptext" id="myTooltip">Copy to clipboard</span>
-            Copy text
-        </button>
-    </div>
-
-    <div>
-        <img src="data:image/png;base64,{{.QRcodeBase64}}" />
-    </div>
-
-
-    {{if .Exist}}
-    <div>
-        <a href="/archive/download/{{.FolderCode}}">Download</a>
-    </div>
-    {{end}}
-
-
-    <div>
-        <ul>
-            {{ range .FileNameList }}
-            <li>{{ . }}</li>
-            {{ end }}
-        </ul>
-        `
-    </div>
-
-    <!-- <a href="/archive/download/{{.FolderCode}}" download="proposed_file_name">Download</a> -->
-
-    <!-- {{if .Exist}}
-    <button type="button" onClick="window.location.reload()">
-        <a href="/archive/download/{{.FolderCode}}">Download</a>
-     </button>
-     {{end}} -->
-
+    {{ end }}
 </div>
-
+{{end}}
 <script>
     function myFunction() {
         // Get the text field
@@ -81,47 +68,4 @@
         tooltip.innerHTML = "Copy to clipboard";
     }
 </script>
-
-<!-- <style>
-    .tooltip {
-      position: relative;
-      display: inline-block;
-    }
-    
-    .tooltip .tooltiptext {
-      visibility: hidden;
-      width: 140px;
-      background-color: #555;
-      color: #fff;
-      text-align: center;
-      border-radius: 6px;
-      padding: 5px;
-      position: absolute;
-      z-index: 1;
-      bottom: 150%;
-      left: 50%;
-      margin-left: -75px;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    
-    .tooltip .tooltiptext::after {
-      content: "";
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      margin-left: -5px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: #555 transparent transparent transparent;
-    }
-    
-    .tooltip:hover .tooltiptext {
-      visibility: visible;
-      opacity: 1;
-    }
-    </style> -->
-
-{{end}}
-
 {{end}}

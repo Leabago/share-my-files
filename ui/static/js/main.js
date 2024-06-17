@@ -3,6 +3,9 @@ var approximateMaxFileSize = approximate(maxFileSize);
 document.getElementById("maxFileSize").textContent = approximateMaxFileSize;
 const bigFileMessage = "File size is too large, no more than " + approximateMaxFileSize + "megabytes allowed";
 const minFileMessage = "Please upload the file";
+const smallFileMessage = "Please upload a larger file";
+const unknownFileMessage = "Unknown error";
+
 const maxFileNameSize = 30
 
 var navLinks = document.querySelectorAll("nav a");
@@ -22,7 +25,7 @@ submit.disabled = true;
 // Создаем коллекцию файлов:
 var dt = new DataTransfer();
 var file_list = dt.files;
-const formData = new FormData();
+var formData = new FormData();
 
 
 console.log('коллекция файлов создана:');
@@ -32,6 +35,7 @@ document.querySelector('input[type="file"]').files = file_list;
 
 const inputElement = document.getElementById("input");
 inputElement.addEventListener("change", handleFiles, false);
+
 function handleFiles() {
 	const fileList = this.files; /* now you can work with the file list */
 
@@ -42,14 +46,14 @@ function handleFiles() {
 		dt.items.add(fileNew);
 	}
 	console.dir(dt.files);
+
+	updateAll()
 }
 
 
 const output = document.getElementById("output");
 const input = document.getElementById("input");
-input.addEventListener("change", (event) => {
-	updateAll()
-});
+
 
 
 function updateAll() {
@@ -95,13 +99,17 @@ function updateAll() {
 		output.appendChild(li);
 
 		i = i + 1;
-		btn.addEventListener("click", function (e) {			
+		btn.addEventListener("click", function (e) {
 			//delete the parent li
 			var ul = document.getElementById("output");
 			while (ul.firstChild) ul.removeChild(ul.firstChild);
 
 			// remove from list
 			dt.items.remove(this.id);
+
+			console.dir("files updateAll: ");
+			console.dir(dt.files);
+
 
 			// update after remove
 			updateAll()
@@ -113,28 +121,33 @@ function updateAll() {
 	var outputSize = approximate(numberOfBytes)
 	document.getElementById("fileSize").textContent = outputSize;
 	// size 
- 
+
+
 
 	checkSize(numberOfBytes)
 }
 
-function checkSize(numberOfBytes){
+function checkSize(numberOfBytes) {
 	var checkMaxSize = numberOfBytes <= maxFileSize
 	var checkMinSize = numberOfBytes > 0
 	var submit = document.getElementById("submit")
-	var errors =  document.getElementById("errors")
+	var errors = document.getElementById("errors")
 
 	// check
-	if ( checkMaxSize &&  checkMinSize) {
+	if (checkMaxSize && checkMinSize) {
 		errors.textContent = "";
 		submit.disabled = false;
 		return true;
 	} else {
-		if (!checkMaxSize){
+		if (!checkMaxSize) {
 			errors.textContent = bigFileMessage;
-		} else if (!checkMinSize) {
+		} else if (!checkMinSize && dt.files.length == 0) {
 			errors.textContent = minFileMessage;
-		}	
+		} else if (dt.files.length > 0 && !checkMinSize) {
+			errors.textContent = smallFileMessage;
+		} else {
+			errors.textContent = unknownFileMessage;
+		}
 		submit.disabled = true;
 		return false;
 	}
@@ -172,7 +185,7 @@ function approximate(numberOfBytes) {
 	return outputSize
 }
 
-function setName(name) { 
+function setName(name) {
 	if (name.length > maxFileNameSize) {
 		name = name.substring(0, maxFileNameSize);
 		name = name + "...";
@@ -193,18 +206,18 @@ function validateMyForm() {
 		numberOfBytes += file.size;
 		formData.append("files", file);
 	}
- 
 
-	 
+
+
 	fetch("https://localhost:8080/upload", {
 		method: "post",
 		body: formData,
 	})
-	.catch((error) => ("Something went wrong!", error))
-	.then((response) => response.text().then(function (text) {
-		 console.log("response text: " + text)
-		 window.location.href = "https://localhost:8080/archive/" + text;
-	  }))
+		.catch((error) => ("Something went wrong!", error))
+		.then((response) => response.text().then(function (text) {
+			console.log("response text: " + text)
+			window.location.href = "https://localhost:8080/archive/" + text;
+		}))
 
 }
 
