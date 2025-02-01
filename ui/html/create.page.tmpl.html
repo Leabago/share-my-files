@@ -4,7 +4,8 @@
 
 <div class="container">
 
-  <form method="post" enctype="multipart/form-data" onsubmit="return validateMyForm();" id="form-for-send-files">
+  <!-- <form method="post" enctype="multipart/form-data" action="archive" onsubmit="return validateMyForm();" id="form-for-send-files"> -->
+  <form method="post" enctype="multipart/form-data" action="archive" id="form-for-send-files">
     <div class="row">
       <div class="col">
         <div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
@@ -52,7 +53,30 @@
       </div>
 
       <div class="col">
-        <button id="submit">Submit</button>
+
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="options" id="option1" value="1">
+          <label class="form-check-label" for="option1">1 download</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="options" id="option2" value="2" checked>
+          <label class="form-check-label" for="option2">3 hour</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="options" id="option3" value="3">
+          <label class="form-check-label" for="option3">1 day</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="options" id="option4" value="4">
+          <label class="form-check-label" for="option4">3 days</label>
+        </div>
+
+        <br>
+        <br>
+
+        <button id="submit" type="submit" class="btn btn-primary">save</button>
+
+        <!-- <button id="submit">Submit</button> -->
       </div>
     </div>
   </form>

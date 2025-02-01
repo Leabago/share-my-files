@@ -1,7 +1,7 @@
 package operation
 
 import (
-	"share-my-file/pkg/models"
+	"share-my-files/pkg/models"
 
 	"gorm.io/gorm"
 )
@@ -11,7 +11,7 @@ type FileModel struct {
 }
 
 func (file *FileModel) Insert() {
-	file.DB.Create(&models.File{Name: "file1"})
+	file.DB.Create(&models.File{})
 }
 
 func (file *FileModel) Get() {

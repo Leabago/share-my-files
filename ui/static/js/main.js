@@ -39,15 +39,33 @@ inputElement.addEventListener("change", handleFiles, false);
 function handleFiles() {
 	const fileList = this.files; /* now you can work with the file list */
 
+	var uploadData = new FormData();
+
+	var count = 0
+
+	console.log("count: ", count)
+
 	for (const file of fileList) {
 		var fileNew = new File([file], file.name, { type: file.type });
 		Object.defineProperty(fileNew, 'size', { value: file.size })
 		console.log("fileNew: ", fileNew.size)
 		dt.items.add(fileNew);
+		uploadData.append("files", fileNew);
+		count +=1
 	}
+
+	console.log("count2: ", count)
 	console.dir(dt.files);
 
-	updateAll()
+
+	console.log("handleFiles")
+
+	if (count != 0) {
+		console.log("handleFiles do update")
+		updateAll()
+		uploadAll(uploadData)
+	}
+
 }
 
 
@@ -57,6 +75,7 @@ const input = document.getElementById("input");
 
 
 function updateAll() {
+	console.log("updateAll")
 	var submit = document.getElementById("submit")
 	submit.disabled = true;
 
@@ -107,8 +126,21 @@ function updateAll() {
 			// remove from list
 			dt.items.remove(this.id);
 
+
+			console.log("remove :", file.name)
+
 			console.dir("files updateAll: ");
 			console.dir(dt.files);
+
+
+			fetch("https://localhost:8080/delete/" + file.name, {
+				method: "post",			 
+			})
+			.catch((error) => ("Something went wrong!", error))
+			.then((response) => response.text().then(function (text) {
+				console.log("response text: " + text)
+			}))
+			
 
 
 			// update after remove
@@ -126,6 +158,21 @@ function updateAll() {
 
 	checkSize(numberOfBytes)
 }
+
+
+function uploadAll(uploadData) {
+	console.log("uploadAll")
+
+	fetch("https://localhost:8080/upload", {
+		method: "post",
+		body: uploadData,
+	})
+		.catch((error) => ("Something went wrong!", error))
+		.then((response) => response.text().then(function (text) {
+			console.log("response text: " + text)
+		}))
+}
+ 
 
 function checkSize(numberOfBytes) {
 	var checkMaxSize = numberOfBytes <= maxFileSize
@@ -195,7 +242,7 @@ function setName(name) {
 
 function validateMyForm() {
 
-	console.log("")
+	console.log("validateMyForm")
 
 	var submit = document.getElementById("submit")
 	submit.disabled = true;
@@ -209,7 +256,7 @@ function validateMyForm() {
 
 
 
-	fetch("https://localhost:8080/upload", {
+	fetch("https://localhost:8080/archive", {
 		method: "post",
 		body: formData,
 	})

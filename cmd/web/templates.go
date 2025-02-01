@@ -3,8 +3,8 @@ package main
 import (
 	"html/template"
 	"path/filepath"
-	"share-my-file/pkg/forms"
-	"share-my-file/pkg/models"
+	"share-my-files/pkg/forms"
+	"share-my-files/pkg/models"
 )
 
 type templateData struct {

@@ -1,19 +1,13 @@
 package models
 
-type Product struct {
-	// gorm.Model
-	Code  string
-	Price uint
-}
-
 type File struct {
-	// gorm.Model
-	Name         string
-	FolderCode   string
-	Exist        bool
-	URL          string
-	QRcodeBase64 string
-	FileNameList []string
+	Name         string   `json:"name"`
+	FileCode     string   `json:"fileCode"`
+	Exist        bool     `json:"exist"`
+	URL          string   `json:"url"`
+	QRcodeBase64 string   `json:"qrCodeBase64"`
+	FileNameList []string `json:"fileNameList"`
+	OneDownload  bool     `json:"oneDownload"`
 }
 
 type FileSize struct {

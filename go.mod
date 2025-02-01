@@ -1,4 +1,4 @@
-module share-my-file
+module share-my-files
 
 go 1.22.3
 

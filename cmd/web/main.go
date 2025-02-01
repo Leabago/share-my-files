@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"share-my-file/pkg/models/operation"
+	"share-my-files/pkg/models/operation"
 	"time"
 
 	"github.com/go-redis/redis"

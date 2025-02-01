@@ -1,20 +1,47 @@
 package main
 
 import (
-	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"share-my-file/pkg/forms"
-	"share-my-file/pkg/models"
+	"os"
+	"path/filepath"
+	"share-my-files/pkg/forms"
+	"share-my-files/pkg/models"
 	"strconv"
-
-	qrcode "github.com/skip2/go-qrcode"
 )
 
 func ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Ok"))
 }
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
+
+	// Generate a new session ID
+	sessionID, err := generateSessionID()
+	if err != nil {
+		app.logger.errorLog.Fatal(err)
+		return
+	}
+
+	// create unique user code assosiated with files
+	userCode := createUserCode()
+
+	// Store the session in-memory store Redis
+	app.redisClient.Set(app.getRedisPath(sessionPath, sessionID), userCode, sessionIdTime)
+
+	// Create a secure cookie
+	cookie := http.Cookie{
+		Name:     "session_id",
+		Value:    sessionID,
+		HttpOnly: true, // Prevent access via JavaScript
+		Secure:   true, // Use HTTPS in production
+		Path:     "/",
+		SameSite: http.SameSiteStrictMode, // Prevent CSRF attacks
+	}
+
+	// Set the cookie in the response
+	http.SetCookie(w, &cookie)
+
 	app.render(w, r, "create.page.tmpl.html", &templateData{
 		Form: forms.New(nil),
 	})
@@ -22,93 +49,56 @@ func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get(":id")
-	fullURL := r.Host + r.URL.Path
 
-	var png []byte
-	png, err := qrcode.Encode(fullURL, qrcode.Medium, 256)
-	if err != nil {
-		app.logger.infoLog.Println("cant create QRcode")
-	}
-	base64ImageData := base64.StdEncoding.EncodeToString(png)
-
-	fileNameList := app.redisClient.LRange(app.getAvailableKey(code), 0, -1).Val()
-	fmt.Println("fileNames:", fileNameList)
-
-	var file = &models.File{
-		FolderCode:   code,
-		Exist:        app.fileExist(code),
-		URL:          fullURL,
-		QRcodeBase64: base64ImageData,
-		FileNameList: fileNameList,
-	}
-
-	// s, err := app.files.Get()
-
-	// if err != nil {
-	// 	if errors.Is(err, models.ErrNoRecord) {
-	// 		app.notFound(w)
-	// 	} else {
-	// 		app.serverError(w, err)
-	// 	}
-	// 	return
-	// }
+	fileInfo := app.redisClient.HGet(app.getRedisPath(availablePath, code), fileInfoTitle).Val()
+	file := &models.File{}
+	json.Unmarshal([]byte(fileInfo), file)
+	file.Exist = app.fileExist(code)
 
 	app.render(w, r, "show.page.tmpl.html", &templateData{
 		File: file,
 	})
-
-	// filePath := folderPath + folderBegin + code + zipName
-	// filename := folderBegin + code + zipName
-
-	// w.Header().Set("Content-Disposition", "attachment; filename="+strconv.Quote(filename))
-	// w.Header().Set("Content-Type", "application/octet-stream")
-	// http.ServeFile(w, r, filePath)
-
 }
 
 func (app *application) getSnippet(w http.ResponseWriter, r *http.Request) {
-	code := r.URL.Query().Get(":id")
+	fileCode := r.URL.Query().Get(":id")
 
-	// var file = &models.File{
-	// 	FolderCode: code,
-	// }
+	fileInfo := app.redisClient.HGet(app.getRedisPath(availablePath, fileCode), fileInfoTitle).Val()
+	file := &models.File{}
+	json.Unmarshal([]byte(fileInfo), file)
 
-	// app.render(w, r, "show.page.tmpl.html", &templateData{
-	// 	File: file,
-	// })
-
-	if app.fileExist(code) {
-
-		filename := folderBegin + code + zipName
-		filePath := folderPath + filename
-
-		w.Header().Set("Content-Disposition", "attachment; filename="+strconv.Quote(filename))
+	if app.fileExist(fileCode) {
+		filePath := folderPath + file.Name
+		w.Header().Set("Content-Disposition", "attachment; filename="+strconv.Quote(file.Name))
 		w.Header().Set("Content-Type", "application/octet-stream")
 		http.ServeFile(w, r, filePath)
+
+		// delete file if it is for one download
+		if file.OneDownload {
+			app.redisClient.HDel(app.getRedisPath(availablePath, fileCode), fileInfoTitle)
+		}
 	} else {
-		http.Redirect(w, r, fmt.Sprintf("/archive/%s", code), http.StatusSeeOther)
+		http.Redirect(w, r, fmt.Sprintf("/archive/%s", fileCode), http.StatusSeeOther)
 	}
 }
 
 // homeGetFiles upload files to zip
 func (app *application) homeGetFiles(w http.ResponseWriter, r *http.Request) {
-	// get folder name
-	var code = createUserCode()
-	var zipFileName = folderPath + folderBegin + code + zipName
-	app.logger.infoLog.Printf("create new folder %s", zipFileName)
-	fileNameList, err := ParseMediaType(r, zipFileName, app.maxFileSize)
+
+	sessionID, userCode, err := app.getSessionValue(r)
 	if err != nil {
 		app.serverError(w, err)
 	}
 
-	// send key to redis. key is going to expire
-	app.redisClient.RPush((app.getAvailableKey(code)), fileNameList)
-	app.redisClient.Expire(app.getAvailableKey(code), smallTime).Result()
-	w.Write([]byte(code))
-}
+	var folderPathFull = filepath.Join(folderPath, sessionID)
+	app.logger.infoLog.Printf("create new folder %s", folderPathFull)
 
-func (app *application) getAvailableKey(code string) string {
-	return available + code
+	_, err = saveFilesToFolder(r, folderPathFull, app.maxFileSize)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	w.Write([]byte(userCode))
 }
 
 func (app *application) redirectToArchive(w http.ResponseWriter, r *http.Request) {
@@ -132,9 +122,63 @@ func (application *application) redirectHome(w http.ResponseWriter, r *http.Requ
 	http.Redirect(w, r, "/upload", http.StatusSeeOther)
 }
 
-func check(e error) {
-	if e != nil {
-		fmt.Println("panic panic")
-		panic(e)
+// archive upload files to zip
+func (app *application) archive(w http.ResponseWriter, r *http.Request) {
+	sessionID, fileCode, err := app.getSessionValue(r)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	// create zip archive with files
+	fileNameList, err := createArhive(sessionID, fileCode)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	// select file lifetime by selected radio value
+	lifeTime := selectLifeTime(r.FormValue("options"))
+
+	// collect file information
+	fullURL := getFullURL(r, fileCode)
+
+	base64ImageData, err := createBase64ImageData(fullURL)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	file := &models.File{
+		Name:         folderBegin + fileCode + zipName,
+		FileCode:     fileCode,
+		FileNameList: fileNameList,
+		OneDownload:  isOneDownload(r.FormValue("options")),
+		Exist:        true,
+		URL:          fullURL,
+		QRcodeBase64: base64ImageData,
+	}
+
+	fileJson, err := json.Marshal(file)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	app.redisClient.HSet((app.getRedisPath(availablePath, fileCode)), fileInfoTitle, string(fileJson))
+	app.redisClient.Expire(app.getRedisPath(availablePath, fileCode), lifeTime).Result()
+
+	// redirect
+	redirectURL := filepath.Join("archive", fileCode)
+	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+}
+
+// deleteOneFile delete only one file during session
+func (app *application) deleteOneFile(w http.ResponseWriter, r *http.Request) {
+	fileName := r.URL.Query().Get(":name")
+	sessionID, _, err := app.getSessionValue(r)
+	if err != nil {
+		app.serverError(w, err)
+	}
+	fullPath := filepath.Join(folderPath, sessionID, fileName)
+	err = os.Remove(fullPath)
+	if err != nil {
+		app.serverError(w, err)
 	}
 }

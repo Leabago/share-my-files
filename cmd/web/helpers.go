@@ -3,6 +3,8 @@ package main
 import (
 	"archive/zip"
 	"bytes"
+	crypto "crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -12,11 +14,14 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
+
+	qrcode "github.com/skip2/go-qrcode"
 )
 
 func getEnv(name string, logger AppLogger) string {
@@ -48,61 +53,70 @@ func (app *application) fileExist(code string) bool {
 	}
 }
 
-// removeNotAvaliableFiles get keys from redis and delete expired files
-func (app *application) removeNotAvaliableFiles() {
+// removeExpiredFiles get keys from redis and delete expired files
+func (app *application) removeExpiredFiles() {
 	f, err := os.Open(folderPath)
 	if err != nil {
 		app.logger.errorLog.Fatal(err)
 		return
 	}
-	files, err := f.Readdir(0)
+	folders, err := f.Readdir(0)
 	if err != nil {
 		app.logger.errorLog.Fatal(err)
 		return
 	}
 
-	fileNamesForDelete := make(map[string]bool) // New empty set
+	foldersForDelete := make(map[string]bool) // New empty set
 
-	for _, v := range files {
-		fileNamesForDelete[v.Name()] = true // Add
+	for _, v := range folders {
+		foldersForDelete[v.Name()] = true // Add
 	}
 
-	// get file name for saving
-	var availableFiles = app.getAvailableFiles()
+	// get folders name for saving
+	var availableFolders = app.getAvailableFolders()
 
-	// delete Available file from deleting list
-	for _, name := range availableFiles {
-		delete(fileNamesForDelete, name)
+	fmt.Println("availableFolders: ", availableFolders)
+
+	// delete Available folders from deleting list
+	for _, folder := range availableFolders {
+		delete(foldersForDelete, folder)
 	}
 
-	// delete file
-	for k := range fileNamesForDelete { // Loop
-		e := os.Remove(folderPath + k)
+	app.logger.infoLog.Println("files to be deleted: ", foldersForDelete)
+
+	// delete folders
+	for k := range foldersForDelete {
+		e := os.RemoveAll(folderPath + k)
 		if e != nil {
 			log.Fatal(e)
 		}
 	}
-
-	// app.logger.infoLog.Println("files to be deleted: ", fileNamesForDelete)
 }
 
 func (app *application) deleteFileEveryNsec(second time.Duration) {
 	ticker := time.NewTicker(time.Second * second)
 	defer ticker.Stop()
 	for ; true; <-ticker.C {
-		app.removeNotAvaliableFiles()
+		app.removeExpiredFiles()
 	}
 }
 
-// getAvailableFiles returen all folders(key) wich are not expire
-func (app *application) getAvailableFiles() []string {
+// getAvailableFolders return all folders(key) wich are not expire
+func (app *application) getAvailableFolders() []string {
 	// get all keys from redis
-	result, _ := app.redisClient.Keys("available:*").Result()
-
+	available, _ := app.redisClient.Keys(availablePath + "*").Result()
+	session, _ := app.redisClient.Keys(sessionPath + "*").Result()
 	var availableFiles []string
-	for _, s := range result {
+
+	for _, s := range available {
 		split := strings.Split(s, ":")
 		filename := folderBegin + split[1] + zipName
+		availableFiles = append(availableFiles, filename)
+	}
+
+	for _, s := range session {
+		split := strings.Split(s, ":")
+		filename := split[1]
 		availableFiles = append(availableFiles, filename)
 	}
 
@@ -190,6 +204,7 @@ func (app *application) addDefaultData(td *templateData, r *http.Request) *templ
 	return td
 }
 
+// ParseMediaType parse files from request and add it to zip arhive
 func ParseMediaType(r *http.Request, zipFileName string, maxFileSize int) ([]string, error) {
 	var fileNameList []string
 
@@ -258,9 +273,78 @@ func ParseMediaType(r *http.Request, zipFileName string, maxFileSize int) ([]str
 	}
 
 	err = errors.New("mus be multipart")
-	fmt.Println("ParseMediaType: error6: ", err)
+	fmt.Println("ParseMediaType: error: ", err)
 	return nil, err
 
+}
+
+func saveFilesToFolder(r *http.Request, folderPath string, maxFileSize int) ([]string, error) {
+	var fileNameList []string
+
+	// Create the folder if it doesn't exist
+	err := os.MkdirAll(folderPath, os.ModePerm)
+	if err != nil {
+		fmt.Println("ParseMediaType: Error creating folder:", err)
+		return nil, err
+	}
+
+	mediaType, params, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+	if err != nil {
+		fmt.Println("ParseMediaType:  Content-Type missing: ", err)
+		return nil, err
+	}
+	if mediaType == "multipart/form-data" {
+		mr := multipart.NewReader(r.Body, params["boundary"])
+		sumSize := 0
+
+		for {
+			p, err := mr.NextPart()
+			if err == io.EOF {
+				fmt.Println("ParseMediaType: ok: ", err)
+				return fileNameList, nil
+			}
+			if err != nil {
+				fmt.Println("ParseMediaType: error1: ", err)
+				return nil, err
+			}
+			slurp, err := io.ReadAll(p)
+			if err != nil {
+				fmt.Println("ParseMediaType: error2: ", err)
+				return nil, err
+			}
+
+			// Add a file to the folder
+
+			err = os.WriteFile(filepath.Join(folderPath, p.FileName()), []byte(slurp), 0666)
+			if err != nil {
+				fmt.Println("Error writing file:", err)
+				return nil, err
+			}
+
+			// Write data to the file
+			// sizeOfslurp, err := f.Write(slurp)
+			// if err != nil {
+			// 	fmt.Println("ParseMediaType: error4: ", err)
+			// 	return nil, err
+			// }
+			sizeOfslurp := 1
+
+			sumSize += sizeOfslurp
+			fileNameList = append(fileNameList, p.FileName())
+
+			// if szie of files bigger then
+			if sumSize > maxFileSize {
+				var err error = errors.New(fmt.Sprintf(bigFileMessage, maxFileSize))
+				fmt.Println("ParseMediaType: error5: ", err)
+				return nil, err
+			}
+
+		}
+	}
+
+	err = errors.New("mus be multipart")
+	fmt.Println("ParseMediaType: error: ", err)
+	return nil, err
 }
 
 func writeFileSize(logger AppLogger) int {
@@ -306,5 +390,213 @@ func writeFileSize(logger AppLogger) int {
 			logger.errorLog.Fatal(err)
 		}
 		return i
+	}
+}
+
+// generateSessionID generate a secure random session ID
+func generateSessionID() (string, error) {
+	bytes := make([]byte, 32) // 32 bytes for a secure session ID
+	_, err := crypto.Read(bytes)
+	if err != nil {
+		return "", err
+	}
+	return base64.URLEncoding.EncodeToString(bytes), nil
+}
+
+// getSessionValue return session_id and code from redis
+func (app *application) getSessionValue(r *http.Request) (string, string, error) {
+	cookie, err := r.Cookie(session_id)
+	if err != nil {
+		if err == http.ErrNoCookie {
+			// No cookie was found
+			err := fmt.Errorf("no session cookie found: %v", err)
+			app.logger.errorLog.Fatal(err)
+			return "", "", err
+		}
+		// Other errors
+		err := fmt.Errorf("error retrieving cookie: %v", err)
+		app.logger.errorLog.Fatal(err)
+		return "", "", err
+	}
+
+	// Get the session ID from the cookie
+	sessionIdValue := cookie.Value
+
+	result, err := app.redisClient.Keys(app.getRedisPath(sessionPath, sessionIdValue)).Result()
+	if err != nil {
+		app.logger.errorLog.Fatal(err)
+		return "", "", err
+	}
+
+	if len(result) == 0 {
+		err := fmt.Errorf("can`t find session id: %v", sessionIdValue)
+		app.logger.infoLog.Println(err.Error())
+		return "", "", err
+	}
+	// code - folder name
+	sessionID := result[0]
+	userCode := app.redisClient.Get(result[0]).Val()
+
+	split := strings.Split(sessionID, ":")
+	if len(split) != 2 {
+		err = fmt.Errorf("can`t split session_id '%s'", sessionID)
+		app.logger.errorLog.Fatal(err)
+		return "", "", err
+	}
+
+	return split[1], userCode, nil
+}
+
+// createArhive creates archive puts all files into archive and delete all files except archive
+func createArhive(sessionID, sessionValue string) ([]string, error) {
+
+	var fileNameList []string
+
+	// pathe to session folders
+	var folderPathFull = filepath.Join(folderPath, sessionID)
+
+	// Define the name of the ZIP archive
+	var zipFileName = folderBegin + sessionValue + zipName
+	zipFileNameFull := filepath.Join(folderPath, zipFileName)
+
+	// Create the ZIP file
+	zipFile, err := os.Create(zipFileNameFull)
+	if err != nil {
+		return fileNameList, fmt.Errorf("error creating ZIP file: %v", err)
+	}
+	defer zipFile.Close()
+
+	// Create ZIP writer
+	zipWriter := zip.NewWriter(zipFile)
+	defer zipWriter.Close()
+
+	// Get the list of files in the current directory
+	files, err := os.ReadDir(folderPathFull)
+	fmt.Println("Get the list of files in the current directory: ", files)
+	if err != nil {
+		return fileNameList, fmt.Errorf("error reading directory: %s", err)
+	}
+
+	// Add each file to the ZIP archive
+	for _, file := range files {
+		// Skip directories and the ZIP file itself
+		if file.IsDir() || file.Name() == zipFileName {
+			continue
+		}
+
+		err := addFileToZip(zipWriter, folderPathFull, file.Name())
+		if err != nil {
+			return fileNameList, fmt.Errorf("error adding file to ZIP: %v", err)
+		}
+
+		fileNameList = append(fileNameList, file.Name())
+	}
+
+	// Close the ZIP writer to finalize the archive
+	zipWriter.Close()
+	zipFile.Close()
+
+	// Delete all files except the ZIP archive
+
+	err = os.RemoveAll(folderPathFull)
+	if err != nil {
+		return fileNameList, fmt.Errorf("error deleting folder '%s': %v", folderPathFull, err)
+	}
+
+	// for _, file := range files {
+
+	// 	fmt.Println("1 delete file : ", file)
+	// 	if file.Name() == zipFileName {
+	// 		fmt.Println("2 delete zipFileName continue : ", file)
+	// 		continue
+	// 	}
+	// 	err := os.Remove(filepath.Join(folderPathFull, file.Name()))
+	// 	fmt.Println("err : ", err)
+	// 	fmt.Println("2 delete file : ", filepath.Join(folderPathFull, file.Name()))
+	// 	if err != nil {
+	// 		return fileNameList, fmt.Errorf("error deleting file '%s': %v", file.Name(), err)
+	// 	}
+	// }
+
+	fmt.Println("Backup completed. Archive saved as", zipFileNameFull)
+	return fileNameList, nil
+}
+
+// Function to add a file to a ZIP archive
+func addFileToZip(zipWriter *zip.Writer, folderPathFull, fileName string) error {
+	// Open the file
+	file, err := os.Open(filepath.Join(folderPathFull, fileName))
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Create a ZIP file entry
+	zipFileWriter, err := zipWriter.Create(fileName)
+	if err != nil {
+		return err
+	}
+
+	// Copy file content into ZIP
+	_, err = io.Copy(zipFileWriter, file)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// selectLifeTime choose life time for file
+func selectLifeTime(selectedOption string) time.Duration {
+	switch selectedOption {
+	case "1":
+		return mediumTime
+	case "2":
+		return smallTime
+	case "3":
+		return mediumTime
+	case "4":
+		return bigTime
+	}
+
+	return smallTime
+}
+
+// isOneDownload return true if life time is one download
+func isOneDownload(selectedOption string) bool {
+	switch selectedOption {
+	case "1":
+		return true
+	default:
+		return false
+	}
+}
+
+// return QR-code string
+func createBase64ImageData(url string) (string, error) {
+	var png []byte
+	png, err := qrcode.Encode(url, qrcode.Medium, 256)
+	if err != nil {
+		return "", fmt.Errorf("cant create QRcode: %v", err)
+	}
+
+	base64ImageData := base64.StdEncoding.EncodeToString(png)
+
+	return base64ImageData, nil
+}
+
+// getRedisPath return path for redis key
+func (app *application) getRedisPath(path, key string) string {
+	return path + key
+}
+
+// Generate full URL with HTTPS
+func getFullURL(r *http.Request, fileCode string) string {
+
+	// Check if the request is HTTPS
+	if r.TLS != nil {
+		return "https://" + filepath.Join(r.Host, r.RequestURI, fileCode)
+	} else {
+		return "http://" + filepath.Join(r.Host, r.RequestURI, fileCode)
 	}
 }

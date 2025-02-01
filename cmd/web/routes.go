@@ -12,20 +12,15 @@ func (app *application) routes() http.Handler {
 	dynamicMiddleware := alice.New()
 
 	mux := pat.New()
-
-	// main page
-	// mux.Get("/", dynamicMiddleware.ThenFunc(app.home))
-	// mux.Post("/", dynamicMiddleware.ThenFunc(app.homeGetFiles))
-
-	// mux.Get("/snippet/create", dynamicMiddleware.Append(app.requireAuthentication).ThenFunc(app.createSnippetForm))
-	// mux.Post("/snippet/create", dynamicMiddleware.Append(app.requireAuthentication).ThenFunc(app.createSnippet))
-
 	mux.Get("/", dynamicMiddleware.ThenFunc(app.redirectHome))
 	mux.Get("/upload", dynamicMiddleware.ThenFunc(app.createSnippetForm))
 	mux.Post("/upload", dynamicMiddleware.ThenFunc(app.homeGetFiles))
+	mux.Post("/archive", dynamicMiddleware.ThenFunc(app.archive))
 	mux.Get("/archive/:id", dynamicMiddleware.ThenFunc(app.showSnippet))
 	mux.Get("/archive/download/:id", dynamicMiddleware.ThenFunc(app.getSnippet))
 
+	// delte one file from list
+	mux.Post("/delete/:name", dynamicMiddleware.ThenFunc(app.deleteOneFile))
 	mux.Get("/download", dynamicMiddleware.ThenFunc(app.createDownloadForm))
 
 	// ping
