@@ -8,14 +8,14 @@
     {{if not .Exist}}
     <div class="row">
         <div class="col" align="center">
-            <h2>File not exist</h2>
+            <h2>File with code {{.FileCode}} does not exist.</h2>
         </div>
     </div>
     {{else}}
     <div class="row">
         <div class="col">
             <h1>File code: <strong>{{.FileCode}}</strong></h1>
-            <!-- <h4>list of files:</h4> -->
+            <h4>list of files:</h4>
             <ul class="ul">
                 {{ range .FileNameList }}
                 <li>{{ . }}</li>
@@ -25,9 +25,15 @@
 
         <div class="col-6" align="left">
             <br>
-            <a href="/archive/download/{{.FileCode}}">
-                <button type="button" class="btn btn-success">Download</button>
-            </a>
+ 
+            {{if  .OneDownload}}
+            <input type="button" id="oneDownloadInput" class="btn btn-success" value="One download" 
+            onclick="location.href='/archive/download/{{.FileCode}}';document.getElementById('oneDownloadInput').disabled=true;"/>
+            {{else}}
+            <input type="button" id="oneDownloadInput" class="btn btn-success" value="Download" 
+            onclick="location.href='/archive/download/{{.FileCode}}';"/>
+            {{ end }}
+      
             <br>
             <br>
             <div>
@@ -48,6 +54,8 @@
 </div>
 {{end}}
 <script>
+
+ 
     function myFunction() {
         // Get the text field
         var copyText = document.getElementById("myInput");

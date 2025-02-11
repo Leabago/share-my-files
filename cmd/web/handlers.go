@@ -53,7 +53,8 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	fileInfo := app.redisClient.HGet(app.getRedisPath(availablePath, code), fileInfoTitle).Val()
 	file := &models.File{}
 	json.Unmarshal([]byte(fileInfo), file)
-	file.Exist = app.fileExist(code)
+	file.Exist = app.fileExist(code) && (fileInfo != "")
+	file.FileCode = code
 
 	app.render(w, r, "show.page.tmpl.html", &templateData{
 		File: file,
