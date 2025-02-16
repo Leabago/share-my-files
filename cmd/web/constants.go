@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 const pi = 3.14
 
@@ -29,9 +32,13 @@ const bigTime = 12 * time.Hour
 // sessionIdTime lifetime for session
 const sessionIdTime = 30 * time.Minute
 
-const maxFileSize = 104857600
+// 100 megabytes = = 104857600 bytes
+// maxFileSize - maximum file size
+const maxFileSize = 10
 const maxFileSizeFileName = "max-file-size.js"
 const maxFileSizeRegex = `^var maxFileSize = (\d*);$`
 
 // errors
 const bigFileMessage = "File size is too large, no more than %d megabytes allowed" // maxFileSize
+
+var fileTooLarge error = fmt.Errorf("file too large. Maximum allowed size is %d byte", maxFileSize)

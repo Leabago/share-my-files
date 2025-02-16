@@ -131,6 +131,11 @@ func (app *application) serverError(w http.ResponseWriter, err error) {
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
+func (app *application) fileTooLarge(w http.ResponseWriter, err error) {
+	app.logger.infoLog.Output(1, err.Error())
+	http.Error(w, err.Error(), http.StatusRequestEntityTooLarge)
+}
+
 func (app *application) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }
@@ -330,13 +335,11 @@ func saveFilesToFolder(r *http.Request, folderPath string, maxFileSize int) ([]s
 			sizeOfslurp := 1
 
 			sumSize += sizeOfslurp
-			fileNameList = append(fileNameList, p.FileName())
 
 			// if szie of files bigger then
 			if sumSize > maxFileSize {
-				var err error = errors.New(fmt.Sprintf(bigFileMessage, maxFileSize))
-				fmt.Println("ParseMediaType: error5: ", err)
-				return nil, err
+				fmt.Println("ParseMediaType: error5: ", fileTooLarge)
+				return nil, fileTooLarge
 			}
 
 		}

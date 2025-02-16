@@ -1,7 +1,7 @@
 
 var approximateMaxFileSize = approximate(maxFileSize);
 document.getElementById("maxFileSize").textContent = approximateMaxFileSize;
-const bigFileMessage = "File size is too large, no more than " + approximateMaxFileSize + "megabytes allowed";
+const bigFileMessage = "File size is too large, no more than " + approximateMaxFileSize + " allowed";
 const minFileMessage = "Please upload the file";
 const smallFileMessage = "Please upload a larger file";
 const unknownFileMessage = "Unknown error";
@@ -94,15 +94,20 @@ function updateAll() {
 		var divRow = document.createElement("div");
 		divRow.classList.add("row")
 		var divCol1 = document.createElement("div");
-		divCol1.classList.add("col-10")
+		divCol1.classList.add("col-9")
 
-
+		// spinner
 		var divCol2 = document.createElement("div");
-		divCol2.classList.add("col-2")
+		divCol2.classList.add("col-1")
+
+
+		var divCol3 = document.createElement("div");
+		divCol3.classList.add("col-1")
 
 		li.appendChild(divRow);
 		divRow.appendChild(divCol1);
 		divRow.appendChild(divCol2);
+		divRow.appendChild(divCol3);
 
 		var a = document.createElement("a");
 		a.id = "file_name"
@@ -114,7 +119,7 @@ function updateAll() {
 		btn.id = i;
 
 		btn.classList.add("bi-trash");
-		divCol2.appendChild(btn)
+		divCol3.appendChild(btn)
 		output.appendChild(li);
 
 		i = i + 1;
@@ -139,14 +144,29 @@ function updateAll() {
 			.catch((error) => ("Something went wrong!", error))
 			.then((response) => response.text().then(function (text) {
 				console.log("response text: " + text)
-			}))
-			
-
+			}))	
 
 			// update after remove
 			updateAll()
 			console.dir(dt.files);
 		});
+
+ 
+
+		    // Create the div element
+			let spinner = document.createElement("div");
+			spinner.className = "spinner-border spinner-border-sm";
+			spinner.setAttribute("role", "status");
+		
+			// Create the span element
+			let span = document.createElement("span");
+			span.className = "visually-hidden";
+			span.textContent = "Loading...";
+		
+			// Append the span inside the div
+			spinner.appendChild(span);
+			divCol2.appendChild(spinner)
+
 	}
 
 	// Approximate to the closest prefixed unit
@@ -169,7 +189,7 @@ function uploadAll(uploadData) {
 	})
 		.catch((error) => ("Something went wrong!", error))
 		.then((response) => response.text().then(function (text) {
-			console.log("response text: " + text)
+			console.log("response text: (" + text + ")")
 		}))
 }
  
