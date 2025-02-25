@@ -350,16 +350,29 @@ func saveFilesToFolder(r *http.Request, folderPath string, maxFileSize int) ([]s
 	return nil, err
 }
 
+// writeFileSize create config file with max file size with size from constant, if file already existe then use va;ue from existing file
 func writeFileSize(logger AppLogger) int {
-	fileName := configFolderPath + maxFileSizeFileName
+	// get current directory
+	path, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+
+	fileDir := filepath.Join(path, configFolderPath)
+	fileName := filepath.Join(path, configFolderPath, maxFileSizeFileName)
+
 	//...................................
 	//Writing struct type to a JSON file
 	//...................................
 
 	// if file not exist, then create it with default values
 	if _, err := os.Stat(fileName); err != nil {
+		logger.infoLog.Printf("create file '%s' with max file size %d bytes", fileName, maxFileSize)
+
 		// fill deafault maxFileSize
 		var data []byte = []byte("var maxFileSize = " + strconv.Itoa(maxFileSize) + ";")
+
+		createFolderForFiles(fileDir, logger)
 
 		err = os.WriteFile(fileName, data, 0644)
 		if err != nil {
@@ -392,6 +405,8 @@ func writeFileSize(logger AppLogger) int {
 		if err != nil {
 			logger.errorLog.Fatal(err)
 		}
+
+		logger.infoLog.Printf("use existing file '%s' with max file size %d bytes", fileName, i)
 		return i
 	}
 }

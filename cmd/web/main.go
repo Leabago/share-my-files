@@ -37,7 +37,7 @@ type AppLogger struct {
 }
 
 func main() {
-	fmt.Println("start app")
+	fmt.Println("start share-my-files")
 
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
@@ -60,8 +60,7 @@ func main() {
 	}
 	// create folders
 	createFolderForFiles(folderPath, logger)
-	createFolderForFiles(configFolderPath, logger)
-	writeFileSize(logger)
+	// createFolderForFiles(configFolderPath, logger)
 
 	app := &application{
 		logger:      logger,
@@ -89,6 +88,7 @@ func main() {
 	}
 
 	infoLog.Printf("Starting server on %s", APP_PORT)
+
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)
 }

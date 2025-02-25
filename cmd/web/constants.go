@@ -10,7 +10,7 @@ const pi = 3.14
 // folderPath folder with user files
 const folderPath = "/tmp/share-my-files/"
 
-const configFolderPath = "./ui/static/js/"
+const configFolderPath = "/ui/static/js/"
 const folderBegin = "share-my-files-"
 const zipName = ".zip"
 
