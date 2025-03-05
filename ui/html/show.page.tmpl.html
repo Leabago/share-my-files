@@ -41,7 +41,10 @@
 
                 <div id="tooltip">
                     <!-- <button onclick="copyToClipboard()" onmouseout="outFunc()"> -->
-                    <input type="button" class="btn btn-success" value="Copy text" onclick="copyToClipboard()">
+                    <input type="button" class="btn btn-success" value="Copy text" onclick="copyToClipboard_1()">
+
+                    <button onClick="buttonPress()">➡️ Copy Message to Clipboard</button>
+
                 </div>
             </div>
             <br>
@@ -51,10 +54,30 @@
     {{ end }}
 </div>
 {{end}}
-<script>
 
 
-    function copyToClipboard() {
+<script type="text/javascript"> const buttonPress = () => { copyToClipboard(document.getElementById("myInput").value); console.log('Clipboard updated 📥\nNow try pasting!'); };
+
+
+    <!-- <script> -->
+
+    const unsecuredCopyToClipboard = (text) => { const textArea = document.createElement("textarea"); textArea.value = text; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { document.execCommand('copy') } catch (err) { console.error('Unable to copy to clipboard', err) } document.body.removeChild(textArea) };
+
+    /**
+     * Copies the text passed as param to the system clipboard
+     * Check if using HTTPS and navigator.clipboard is available
+     * Then uses standard clipboard API, otherwise uses fallback
+    */
+    const copyToClipboard = (content) => {
+        if (window.isSecureContext && navigator.clipboard) {
+            navigator.clipboard.writeText(content);
+        } else {
+            unsecuredCopyToClipboard(content);
+        }
+    };
+
+
+    function copyToClipboard_1() {
         // Get the text field
         var linkToFile = document.getElementById("myInput").value;
 
