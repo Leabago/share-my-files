@@ -7,6 +7,9 @@ import (
 
 const pi = 3.14
 
+// port for aplication
+const APP_PORT = ":8080"
+
 // folderPath folder with user files
 const folderPath = "/tmp/share-my-files/"
 

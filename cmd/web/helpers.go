@@ -24,16 +24,15 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 )
 
-func getEnv(name string, logger AppLogger) string {
+func getEnv(name string, logger *AppLogger) string {
 	varEnv := os.Getenv(name)
 	if varEnv == "" {
-		ErrDuplicateEmail := fmt.Errorf("empty environment variable %s", name)
-		logger.errorLog.Fatal(ErrDuplicateEmail)
+		logger.errorLog.Fatal(fmt.Errorf("empty environment variable %s", name))
 	}
 	return varEnv
 }
 
-func createFolderForFiles(folderPath string, logger AppLogger) {
+func createFolderForFiles(folderPath string, logger *AppLogger) {
 	if err := os.Mkdir(folderPath, os.ModePerm); err != nil {
 		if errors.Is(err, os.ErrExist) {
 			// file exist
@@ -351,7 +350,7 @@ func saveFilesToFolder(r *http.Request, folderPath string, maxFileSize int) ([]s
 }
 
 // writeFileSize create config file with max file size with size from constant, if file already existe then use va;ue from existing file
-func writeFileSize(logger AppLogger) int {
+func writeFileSize(logger *AppLogger) int {
 	// get current directory
 	path, err := os.Getwd()
 	if err != nil {
