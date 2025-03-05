@@ -24,16 +24,17 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 )
 
-func getEnv(name string, logger AppLogger) string {
-	varEnv := os.Getenv(name)
-	if varEnv == "" {
-		ErrDuplicateEmail := fmt.Errorf("empty environment variable %s", name)
-		logger.errorLog.Fatal(ErrDuplicateEmail)
+func getEnv(name string, logger *AppLogger) string {
+	value := os.Getenv(name)
+	if value == "" {
+		logger.errorLog.Fatal(fmt.Errorf("empty environment variable %s", name))
 	}
-	return varEnv
+
+	logger.infoLog.Printf("get environment variable: %s=%s", name, value)
+	return value
 }
 
-func createFolderForFiles(folderPath string, logger AppLogger) {
+func createFolderForFiles(folderPath string, logger *AppLogger) {
 	if err := os.Mkdir(folderPath, os.ModePerm); err != nil {
 		if errors.Is(err, os.ErrExist) {
 			// file exist
@@ -350,8 +351,8 @@ func saveFilesToFolder(r *http.Request, folderPath string, maxFileSize int) ([]s
 	return nil, err
 }
 
-// writeFileSize create config file with max file size with size from constant, if file already existe then use va;ue from existing file
-func writeFileSize(logger AppLogger) int {
+// writeFileSize create config file with max file size with size from constant, if file already existe then use value from existing file
+func writeFileSize(logger *AppLogger) int {
 	// get current directory
 	path, err := os.Getwd()
 	if err != nil {
@@ -360,10 +361,6 @@ func writeFileSize(logger AppLogger) int {
 
 	fileDir := filepath.Join(path, configFolderPath)
 	fileName := filepath.Join(path, configFolderPath, maxFileSizeFileName)
-
-	//...................................
-	//Writing struct type to a JSON file
-	//...................................
 
 	// if file not exist, then create it with default values
 	if _, err := os.Stat(fileName); err != nil {
@@ -383,7 +380,7 @@ func writeFileSize(logger AppLogger) int {
 	} else {
 		// read from existing file
 
-		// read json file
+		// read javascript file
 		file, err := os.Open(fileName)
 		// if we os.Open returns an error then handle it
 		if err != nil {
@@ -616,5 +613,32 @@ func getFullURL(r *http.Request, fileCode string) string {
 		return "https://" + filepath.Join(r.Host, r.RequestURI, fileCode)
 	} else {
 		return "http://" + filepath.Join(r.Host, r.RequestURI, fileCode)
+	}
+}
+
+// writeDdnsAddress create config file with ddns address
+func writeDdnsAddress(ddnsAddress string, logger *AppLogger) {
+	// get current directory
+	path, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+
+	fileDir := filepath.Join(path, configFolderPath)
+	fileName := filepath.Join(path, configFolderPath, ddnsAddressFileName)
+
+	// if file not exist, then create it with default values
+	if _, err := os.Stat(fileName); err != nil {
+		logger.infoLog.Printf("create file '%s' with ddns address: %s", fileName, ddnsAddress)
+
+		// fill ddns address
+		var data []byte = []byte("var ddnsAddress = '" + ddnsAddress + "';")
+
+		createFolderForFiles(fileDir, logger)
+
+		err = os.WriteFile(fileName, data, 0644)
+		if err != nil {
+			logger.errorLog.Fatal(err)
+		}
 	}
 }

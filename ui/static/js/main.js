@@ -138,7 +138,7 @@ function updateAll() {
 			console.dir(dt.files);
 
 
-			fetch("https://localhost:8080/delete/" + file.name, {
+			fetch(ddnsAddress + "/delete/" + file.name, {
 				method: "post",			 
 			})
 			.catch((error) => ("Something went wrong!", error))
@@ -183,7 +183,7 @@ function updateAll() {
 function uploadAll(uploadData) {
 	console.log("uploadAll")
 
-	fetch("https://localhost:8080/upload", {
+	fetch(ddnsAddress + "/upload", {
 		method: "post",
 		body: uploadData,
 	})
@@ -276,14 +276,14 @@ function validateMyForm() {
 
 
 
-	fetch("https://localhost:8080/archive", {
+	fetch(ddnsAddress + "/archive", {
 		method: "post",
 		body: formData,
 	})
 		.catch((error) => ("Something went wrong!", error))
 		.then((response) => response.text().then(function (text) {
 			console.log("response text: " + text)
-			window.location.href = "https://localhost:8080/archive/" + text;
+			window.location.href = ddnsAddress+ "/archive/" + text;
 		}))
 
 }

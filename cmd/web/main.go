@@ -12,10 +12,8 @@ import (
 	"github.com/go-redis/redis"
 )
 
-const APP_PORT = ":8080"
-
 type application struct {
-	logger AppLogger
+	logger *AppLogger
 
 	redisClient *redis.Client
 
@@ -37,10 +35,24 @@ type AppLogger struct {
 }
 
 func main() {
-	fmt.Println("start share-my-files")
+	fmt.Println("start share-my-files! ddns")
 
+	// create logger
+	logFormat := log.Ldate | log.Ltime | log.Lshortfile
+	infoLog := log.New(os.Stdout, "INFO\t", logFormat)
+	debugLog := log.New(os.Stdout, "DEBUG\t", logFormat)
+	errorLog := log.New(os.Stderr, "ERROR\t", logFormat)
+
+	logger := &AppLogger{
+		infoLog:  infoLog,
+		debugLog: debugLog,
+		errorLog: errorLog,
+	}
+
+	// connect to redis
+	redisAddr := getEnv("REDIS_ADDR", logger)
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     redisAddr,
 		Password: "",
 		DB:       0,
 	})
@@ -48,19 +60,12 @@ func main() {
 	pong, err := redisClient.Ping().Result()
 	fmt.Println("ping redis", pong, err)
 
-	logFormat := log.Ldate | log.Ltime | log.Lshortfile
-	infoLog := log.New(os.Stdout, "INFO\t", logFormat)
-	debugLog := log.New(os.Stdout, "DEBUG\t", logFormat)
-	errorLog := log.New(os.Stderr, "ERROR\t", logFormat)
-
-	logger := AppLogger{
-		infoLog:  infoLog,
-		debugLog: debugLog,
-		errorLog: errorLog,
-	}
 	// create folders
 	createFolderForFiles(folderPath, logger)
 	// createFolderForFiles(configFolderPath, logger)
+
+	// create file with ddns address for javascript
+	writeDdnsAddress(getEnv("DDNS_ADDRESS", logger), logger)
 
 	app := &application{
 		logger:      logger,
