@@ -35,7 +35,7 @@ type AppLogger struct {
 }
 
 func main() {
-	fmt.Println("start share-my-files!")
+	fmt.Println("start share-my-files! ddns")
 
 	// create logger
 	logFormat := log.Ldate | log.Ltime | log.Lshortfile
