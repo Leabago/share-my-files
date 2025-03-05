@@ -1,1 +1,0 @@
-var ddnsAddress = 'http://localhost:8080';
