@@ -24,6 +24,12 @@ spec:
         env:
         - name: REDIS_ADDR
           value: "redis.auxiliary.svc.cluster.local:6379"
+        - name: DDNS_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DDNS_ADDRESS
+
 ---
 apiVersion: v1
 kind: Service
@@ -38,3 +44,12 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8080
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: applications
+data:
+  DDNS_ADDRESS: "http://diskbirds.tplinkdns.com"

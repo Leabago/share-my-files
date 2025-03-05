@@ -64,6 +64,9 @@ func main() {
 	createFolderForFiles(folderPath, logger)
 	// createFolderForFiles(configFolderPath, logger)
 
+	// create file with ddns address for javascript
+	writeDdnsAddress(getEnv("DDNS_ADDRESS", logger), logger)
+
 	app := &application{
 		logger:      logger,
 		files:       &operation.FileModel{},

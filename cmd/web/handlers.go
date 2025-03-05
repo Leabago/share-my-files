@@ -35,7 +35,9 @@ func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request
 		Name:     "session_id",
 		Value:    sessionID,
 		HttpOnly: true, // Prevent access via JavaScript
-		Secure:   true, // Use HTTPS in production
+		// Secure:   true, // Use HTTPS in production
+		// for developnet, DELETE in production
+		Secure:   false, // Use HTTPS in production
 		Path:     "/",
 		SameSite: http.SameSiteStrictMode, // Prevent CSRF attacks
 	}
