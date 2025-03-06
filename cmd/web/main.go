@@ -25,7 +25,7 @@ type application struct {
 
 	templateCache map[string]*template.Template
 
-	maxFileSize int
+	maxFileSize int64
 }
 
 type AppLogger struct {
@@ -66,12 +66,14 @@ func main() {
 
 	// create file with ddns address for javascript
 	writeDdnsAddress(getEnv("DDNS_ADDRESS", logger), logger)
+	// create file with maxFileSize for javascript
+	maxFileSize := writeMaxFileSize(getEnv("MAX_FILE_SIZE", logger), logger)
 
 	app := &application{
 		logger:      logger,
 		files:       &operation.FileModel{},
 		redisClient: redisClient,
-		maxFileSize: writeFileSize(logger),
+		maxFileSize: maxFileSize,
 	}
 
 	// delete files every 10 seconds

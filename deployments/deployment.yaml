@@ -29,6 +29,11 @@ spec:
             configMapKeyRef:
               name: app-config
               key: DDNS_ADDRESS
+        - name: MAX_FILE_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: MAX_FILE_SIZE
 
 ---
 apiVersion: v1
@@ -53,3 +58,4 @@ metadata:
   namespace: applications
 data:
   DDNS_ADDRESS: "http://diskbirds.tplinkdns.com"
+  MAX_FILE_SIZE: 10

@@ -1,7 +1,6 @@
-
 var approximateMaxFileSize = approximate(maxFileSize);
 document.getElementById("maxFileSize").textContent = approximateMaxFileSize;
-const bigFileMessage = "File size is too large, no more than " + approximateMaxFileSize + " allowed";
+const bigFileMessage = "The files are too big, no more than " + approximateMaxFileSize + " allowed";
 const minFileMessage = "Please upload the file";
 const smallFileMessage = "Please upload a larger file";
 const unknownFileMessage = "Unknown error";
@@ -17,9 +16,6 @@ for (var i = 0; i < navLinks.length; i++) {
 		break;
 	}
 }
-
-var submit = document.getElementById("submit")
-submit.disabled = true;
 
 
 // Создаем коллекцию файлов:
@@ -39,11 +35,11 @@ inputElement.addEventListener("change", handleFiles, false);
 function handleFiles() {
 	const fileList = this.files; /* now you can work with the file list */
 
-
 	var uploadData = new FormData();
-
 	var count = 0
-
+	var errors = document.getElementById("errors")
+	errors.textContent = "";
+	const rejectedFiles = [];
 
 
 	// Create a Set
@@ -53,17 +49,37 @@ function handleFiles() {
 	}
 
 	for (const file of fileList) {
+		if (file.size = 0) {
+			continue
+		}
+
 		fileName = setFileName(fileNameSet, file.name)
 		var fileNew = new File([file], fileName, { type: file.type });
 		Object.defineProperty(fileNew, 'size', { value: file.size })
-		dt.items.add(fileNew);
-		uploadData.append("files", fileNew);
-		count += 1
+
+		let numberOfBytes = 0;
+
+		for (const file_dt of dt.files) {
+			numberOfBytes += file_dt.size;
+		}
+
+		numberOfBytes += fileNew.size
+
+
+		// check maxFileSize
+		if (numberOfBytes <= maxFileSize) {
+			dt.items.add(fileNew);
+			uploadData.append("files", fileNew);
+			count += 1
+		} else {
+			rejectedFiles.push(file.name)
+			continue
+		}
 	}
 
-
-	console.dir(dt.files);
-
+	if (rejectedFiles.length > 0) {
+		errors.textContent = `Files [ ${rejectedFiles.map(file => `"${file}"`).join(", ")} ] not loaded. ` + bigFileMessage;
+	}
 
 	if (count != 0) {
 		updateAll()
@@ -75,7 +91,6 @@ function handleFiles() {
 
 // setFileName return file name, add prefix if same name exists
 function setFileName(fileNameSet, fileName) {
-
 	updatedfileName = fileName
 	count = 0
 	while (fileNameSet.has(updatedfileName)) {
@@ -91,15 +106,15 @@ function setFileName(fileNameSet, fileName) {
 }
 
 
-const output = document.getElementById("output");
-const input = document.getElementById("input");
+// const output = document.getElementById("output");
+// const input = document.getElementById("input");
 
 
 
 function updateAll() {
 	console.log("updateAll")
 	var submit = document.getElementById("submit")
-	submit.disabled = true;
+	// submit.disabled = true;
 
 	//delete the parent li
 	var ul = document.getElementById("output");
@@ -196,9 +211,7 @@ function updateAll() {
 	document.getElementById("fileSize").textContent = outputSize;
 	// size 
 
-
-
-	checkSize(numberOfBytes)
+	// checkSize(numberOfBytes)
 }
 
 
@@ -215,32 +228,6 @@ function uploadAll(uploadData) {
 		}))
 }
 
-
-function checkSize(numberOfBytes) {
-	var checkMaxSize = numberOfBytes <= maxFileSize
-	var checkMinSize = numberOfBytes > 0
-	var submit = document.getElementById("submit")
-	var errors = document.getElementById("errors")
-
-	// check
-	if (checkMaxSize && checkMinSize) {
-		errors.textContent = "";
-		submit.disabled = false;
-		return true;
-	} else {
-		if (!checkMaxSize) {
-			errors.textContent = bigFileMessage;
-		} else if (!checkMinSize && dt.files.length == 0) {
-			errors.textContent = minFileMessage;
-		} else if (dt.files.length > 0 && !checkMinSize) {
-			errors.textContent = smallFileMessage;
-		} else {
-			errors.textContent = unknownFileMessage;
-		}
-		submit.disabled = true;
-		return false;
-	}
-}
 
 // Approximate to the closest prefixed unit
 function approximate(numberOfBytes) {
@@ -284,7 +271,7 @@ function setName(name) {
 
 function validateMyForm() {
 
-	console.log("validateMyForm")
+
 
 	var submit = document.getElementById("submit")
 	submit.disabled = true;

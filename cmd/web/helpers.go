@@ -15,7 +15,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -284,7 +283,7 @@ func ParseMediaType(r *http.Request, zipFileName string, maxFileSize int) ([]str
 
 }
 
-func saveFilesToFolder(r *http.Request, folderPath string, maxFileSize int) ([]string, error) {
+func saveFilesToFolder(r *http.Request, folderPath string, maxFileSize int64) ([]string, error) {
 	var fileNameList []string
 
 	// Create the folder if it doesn't exist
@@ -301,9 +300,16 @@ func saveFilesToFolder(r *http.Request, folderPath string, maxFileSize int) ([]s
 	}
 	if mediaType == "multipart/form-data" {
 		mr := multipart.NewReader(r.Body, params["boundary"])
-		sumSize := 0
 
 		for {
+			// Get the total size of all files in the folder
+			totalSize, err := getFolderSize(folderPath)
+
+			if err != nil {
+				fmt.Println("Error:", err)
+				return nil, err
+			}
+
 			p, err := mr.NextPart()
 			if err == io.EOF {
 				fmt.Println("ParseMediaType: ok: ", err)
@@ -319,30 +325,19 @@ func saveFilesToFolder(r *http.Request, folderPath string, maxFileSize int) ([]s
 				return nil, err
 			}
 
-			// Add a file to the folder
+			// check file size, if file size is bigger, return error
+			sumFiles := int64(len(slurp)) + totalSize
+			if sumFiles > maxFileSize {
+				fmt.Println("ParseMediaType: error5: ", errFileTooLarge)
+				return nil, errFileTooLarge
+			}
 
+			// Add a file to the folder
 			err = os.WriteFile(filepath.Join(folderPath, p.FileName()), []byte(slurp), 0666)
 			if err != nil {
 				fmt.Println("Error writing file:", err)
 				return nil, err
 			}
-
-			// Write data to the file
-			// sizeOfslurp, err := f.Write(slurp)
-			// if err != nil {
-			// 	fmt.Println("ParseMediaType: error4: ", err)
-			// 	return nil, err
-			// }
-			sizeOfslurp := 1
-
-			sumSize += sizeOfslurp
-
-			// if szie of files bigger then
-			if sumSize > maxFileSize {
-				fmt.Println("ParseMediaType: error5: ", fileTooLarge)
-				return nil, fileTooLarge
-			}
-
 		}
 	}
 
@@ -351,8 +346,33 @@ func saveFilesToFolder(r *http.Request, folderPath string, maxFileSize int) ([]s
 	return nil, err
 }
 
-// writeFileSize create config file with max file size with size from constant, if file already existe then use value from existing file
-func writeFileSize(logger *AppLogger) int {
+// getFolderSize calculates the total size of all files in a folder
+func getFolderSize(folderPath string) (int64, error) {
+	var totalSize int64
+
+	// Walk through the folder
+	err := filepath.Walk(folderPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Skip directories
+		if !info.IsDir() {
+			totalSize += info.Size() // Add file size to the total
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	return totalSize, nil
+}
+
+// writeMaxFileSize create config file with max file size with size from constant, if file already exist then use value from existing file
+func writeMaxFileSize(maxFileSize string, logger *AppLogger) int64 {
 	// get current directory
 	path, err := os.Getwd()
 	if err != nil {
@@ -364,10 +384,10 @@ func writeFileSize(logger *AppLogger) int {
 
 	// if file not exist, then create it with default values
 	if _, err := os.Stat(fileName); err != nil {
-		logger.infoLog.Printf("create file '%s' with max file size %d bytes", fileName, maxFileSize)
+		logger.infoLog.Printf("create file '%s' with max file size %s bytes", fileName, maxFileSize)
 
-		// fill deafault maxFileSize
-		var data []byte = []byte("var maxFileSize = " + strconv.Itoa(maxFileSize) + ";")
+		// fill default maxFileSize
+		var data []byte = []byte("var maxFileSize = " + maxFileSize + ";")
 
 		createFolderForFiles(fileDir, logger)
 
@@ -376,36 +396,15 @@ func writeFileSize(logger *AppLogger) int {
 			logger.errorLog.Fatal(err)
 		}
 
-		return maxFileSize
-	} else {
-		// read from existing file
-
-		// read javascript file
-		file, err := os.Open(fileName)
-		// if we os.Open returns an error then handle it
-		if err != nil {
-			logger.errorLog.Fatal(err)
-		}
-		fmt.Println("Successfully Opened ", fileName)
-		// defer the closing of our jsonFile so that we can parse it later on
-		defer file.Close()
-
-		// read our opened jsonFile as a byte array.
-		byteValue, _ := io.ReadAll(file)
-		var stringFromFile = string(byteValue)
-		re, _ := regexp.Compile(maxFileSizeRegex)
-		// find size
-		match := re.FindStringSubmatch(stringFromFile)
-
-		i, err := strconv.Atoi(match[1])
-
-		if err != nil {
-			logger.errorLog.Fatal(err)
-		}
-
-		logger.infoLog.Printf("use existing file '%s' with max file size %d bytes", fileName, i)
-		return i
 	}
+
+	maxFileSizeInt64, err := strconv.ParseInt(maxFileSize, 10, 64)
+
+	if err != nil {
+		logger.errorLog.Fatal(err)
+	}
+
+	return maxFileSizeInt64
 }
 
 // generateSessionID generate a secure random session ID

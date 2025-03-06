@@ -37,16 +37,15 @@ const sessionIdTime = 30 * time.Minute
 
 // 100 megabytes = = 104857600 bytes
 // maxFileSize - maximum file size
-const maxFileSize = 10
+// const maxFileSize = int64(10)
 
 // file for keep maxFileSize variable
 const maxFileSizeFileName = "max-file-size.js"
 
 // file for keep ddns address
 const ddnsAddressFileName = "ddns_address.js"
-const maxFileSizeRegex = `^var maxFileSize = (\d*);$`
 
 // errors
 const bigFileMessage = "File size is too large, no more than %d megabytes allowed" // maxFileSize
 
-var fileTooLarge error = fmt.Errorf("file too large. Maximum allowed size is %d byte", maxFileSize)
+var errFileTooLarge error = fmt.Errorf("file size limit exceeded")

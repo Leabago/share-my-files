@@ -99,7 +99,7 @@ func (app *application) homeGetFiles(w http.ResponseWriter, r *http.Request) {
 
 	_, err = saveFilesToFolder(r, folderPathFull, app.maxFileSize)
 	if err != nil {
-		if errors.Is(err, fileTooLarge) {
+		if errors.Is(err, errFileTooLarge) {
 			app.fileTooLarge(w, err)
 		} else {
 			app.serverError(w, err)
