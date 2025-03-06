@@ -34,12 +34,12 @@
   height: 300px;
 }
 
-#file_name {
+/* #file_name {
   width: 20%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
+} */
 
 
 /*  */
@@ -81,4 +81,10 @@
   opacity: 1;
 }
 
- 
+
+.truncate-text {
+  white-space: nowrap;       /* Prevent text from wrapping */
+  overflow: hidden;         /* Hide overflow */
+  text-overflow: ellipsis;  /* Add ellipsis at the end */
+  max-width: 100%;          /* Ensure it respects the container's width */
+}

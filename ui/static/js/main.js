@@ -39,33 +39,55 @@ inputElement.addEventListener("change", handleFiles, false);
 function handleFiles() {
 	const fileList = this.files; /* now you can work with the file list */
 
+
 	var uploadData = new FormData();
 
 	var count = 0
 
-	console.log("count: ", count)
 
-	for (const file of fileList) {
-		var fileNew = new File([file], file.name, { type: file.type });
-		Object.defineProperty(fileNew, 'size', { value: file.size })
-		console.log("fileNew: ", fileNew.size)
-		dt.items.add(fileNew);
-		uploadData.append("files", fileNew);
-		count +=1
+
+	// Create a Set
+	const fileNameSet = new Set();
+	for (const file_dt of dt.files) {
+		fileNameSet.add(file_dt.name)
 	}
 
-	console.log("count2: ", count)
+	for (const file of fileList) {
+		fileName = setFileName(fileNameSet, file.name)
+		var fileNew = new File([file], fileName, { type: file.type });
+		Object.defineProperty(fileNew, 'size', { value: file.size })
+		dt.items.add(fileNew);
+		uploadData.append("files", fileNew);
+		count += 1
+	}
+
+
 	console.dir(dt.files);
 
 
-	console.log("handleFiles")
-
 	if (count != 0) {
-		console.log("handleFiles do update")
 		updateAll()
 		uploadAll(uploadData)
 	}
 
+	this.value = null
+}
+
+// setFileName return file name, add prefix if same name exists
+function setFileName(fileNameSet, fileName) {
+
+	updatedfileName = fileName
+	count = 0
+	while (fileNameSet.has(updatedfileName)) {
+		updatedfileName = "(" + count + ")" + fileName
+		count = count + 1
+	}
+
+	if (updatedfileName != fileName) {
+		fileNameSet.add(updatedfileName)
+	}
+
+	return updatedfileName
 }
 
 
@@ -93,33 +115,33 @@ function updateAll() {
 
 		var divRow = document.createElement("div");
 		divRow.classList.add("row")
-		var divCol1 = document.createElement("div");
-		divCol1.classList.add("col-9")
+		var fileName = document.createElement("div");
+		fileName.classList.add("col-8")
 
 		// spinner
-		var divCol2 = document.createElement("div");
-		divCol2.classList.add("col-1")
+		var statusIcon = document.createElement("div");
+		statusIcon.classList.add("col-1")
 
 
-		var divCol3 = document.createElement("div");
-		divCol3.classList.add("col-1")
+		var trashIcon = document.createElement("div");
+		trashIcon.classList.add("col-1")
 
 		li.appendChild(divRow);
-		divRow.appendChild(divCol1);
-		divRow.appendChild(divCol2);
-		divRow.appendChild(divCol3);
+		divRow.appendChild(statusIcon);
+		divRow.appendChild(fileName);
+		divRow.appendChild(trashIcon);
 
-		var a = document.createElement("a");
-		a.id = "file_name"
-		a.textContent = setName(file.name);
-		divCol1.appendChild(a)
+		var fileNameText = document.createElement("p");
+		fileNameText.textContent = setName(file.name);
+		fileNameText.className = "truncate-text"
+		fileName.appendChild(fileNameText)
 
 		//   button
 		var btn = document.createElement("span");
 		btn.id = i;
 
 		btn.classList.add("bi-trash");
-		divCol3.appendChild(btn)
+		trashIcon.appendChild(btn)
 		output.appendChild(li);
 
 		i = i + 1;
@@ -139,33 +161,33 @@ function updateAll() {
 
 
 			fetch(ddnsAddress + "/delete/" + file.name, {
-				method: "post",			 
+				method: "post",
 			})
-			.catch((error) => ("Something went wrong!", error))
-			.then((response) => response.text().then(function (text) {
-				console.log("response text: " + text)
-			}))	
+				.catch((error) => ("Something went wrong!", error))
+				.then((response) => response.text().then(function (text) {
+					console.log("response text: " + text)
+				}))
 
 			// update after remove
 			updateAll()
 			console.dir(dt.files);
 		});
 
- 
 
-		    // Create the div element
-			let spinner = document.createElement("div");
-			spinner.className = "spinner-border spinner-border-sm";
-			spinner.setAttribute("role", "status");
-		
-			// Create the span element
-			let span = document.createElement("span");
-			span.className = "visually-hidden";
-			span.textContent = "Loading...";
-		
-			// Append the span inside the div
-			spinner.appendChild(span);
-			divCol2.appendChild(spinner)
+
+		// Create the div element
+		let spinner = document.createElement("div");
+		spinner.className = "spinner-border spinner-border-sm";
+		spinner.setAttribute("role", "status");
+
+		// Create the span element
+		let span = document.createElement("span");
+		span.className = "visually-hidden";
+		span.textContent = "Loading...";
+
+		// Append the span inside the div
+		spinner.appendChild(span);
+		statusIcon.appendChild(spinner)
 
 	}
 
@@ -192,7 +214,7 @@ function uploadAll(uploadData) {
 			console.log("response text: (" + text + ")")
 		}))
 }
- 
+
 
 function checkSize(numberOfBytes) {
 	var checkMaxSize = numberOfBytes <= maxFileSize
@@ -283,7 +305,7 @@ function validateMyForm() {
 		.catch((error) => ("Something went wrong!", error))
 		.then((response) => response.text().then(function (text) {
 			console.log("response text: " + text)
-			window.location.href = ddnsAddress+ "/archive/" + text;
+			window.location.href = ddnsAddress + "/archive/" + text;
 		}))
 
 }
