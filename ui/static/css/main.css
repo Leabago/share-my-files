@@ -83,8 +83,26 @@
 
 
 .truncate-text {
-  white-space: nowrap;       /* Prevent text from wrapping */
-  overflow: hidden;         /* Hide overflow */
-  text-overflow: ellipsis;  /* Add ellipsis at the end */
-  max-width: 100%;          /* Ensure it respects the container's width */
+  white-space: nowrap;
+  /* Prevent text from wrapping */
+  overflow: hidden;
+  /* Hide overflow */
+  text-overflow: ellipsis;
+  /* Add ellipsis at the end */
+  max-width: 100%;
+  /* Ensure it respects the container's width */
+}
+
+/* Initially set the image size */
+.qr-code {
+  width: 150px;
+  height: 150px;
+  transition: transform 0.3s ease;
+}
+
+/* Enlarged size when clicked */
+.qr-code.enlarged {
+  width: 300px;
+  height: 300px;
+  transform: scale(2);
 }

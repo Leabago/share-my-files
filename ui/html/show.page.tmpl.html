@@ -3,98 +3,84 @@
 {{define "main"}}
 
 {{with .File}}
-<div class="container">
 
-    {{if not .Exist}}
-    <div class="row">
-        <div class="col" align="center">
-            <h2>File with code {{.FileCode}} does not exist.</h2>
-        </div>
-    </div>
-    {{else}}
-    <div class="row">
-        <div class="col">
-            <h1>File code: <strong>{{.FileCode}}</strong></h1>
-            <h4>list of files:</h4>
-            <ul class="ul">
-                {{ range .FileNameList }}
-                <li>{{ . }}</li>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <!-- Download Button -->
+                {{if .OneDownload}}
+                <button id="downloadInput" class="btn btn-primary btn-lg w-100 mb-4 p-4"
+                    onclick="location.href='/archive/download/{{.FileCode}}';document.getElementById('downloadInput').disabled=true;">
+                    Download   
+                    <img src="../static/img/OneTimeIcon.png" alt="Icon" width="20" height="20" class="me-2">
+                </button>
+                {{else}}
+                <button id="downloadInput" class="btn btn-primary btn-lg w-100 mb-4 p-4"
+                    onclick="location.href='/archive/download/{{.FileCode}}';">
+                    Download
+                </button>
                 {{ end }}
-            </ul>
-        </div>
 
-        <div class="col-8" >
-            <br>
+                {{if not .Exist}}
+                <script>
+                    downloadInput = document.getElementById("downloadInput")
+                    downloadInput.disabled = true
+                </script>
 
-            {{if .OneDownload}}
-            <input type="button" id="oneDownloadInput" class="btn btn-success" value="One download"
-                onclick="location.href='/archive/download/{{.FileCode}}';document.getElementById('oneDownloadInput').disabled=true;" />
-            {{else}}
-            <input type="button" id="oneDownloadInput" class="btn btn-success" value="Download"
-                onclick="location.href='/archive/download/{{.FileCode}}';" />
-            {{ end }}
+                <h4 class="text-center text-secondary mb-4">File with code '<strong>{{.FileCode}}</strong>' does not
+                    exist.</h2>
 
-        
-            <br>
-            <div>
-                <input type="url" value={{.URL}} id="myInput" readonly>
+                {{else}}
+                <!-- ZIP Name -->
+                <h4 class="text-center text-secondary mb-4">File code: '<strong>{{.FileCode}}</strong>'</h2>
 
-                <div id="tooltip">
-                    <!-- <button onclick="copyToClipboard()" onmouseout="outFunc()"> -->
-                    <input type="button" class="btn btn-success" value="Copy text" onclick="copyToClipboard_1()">
 
-                    <button onClick="buttonPress()">➡️ Copy Message to Clipboard</button>
-
+                <!-- File Link with Copy Button -->
+                <div class="input-group mb-4">
+                    <input type="text" class="form-control" id="fileLink" value={{.URL}} readonly>
+                    <button class="btn btn-success" onclick="copyLink()">Copy</button>
                 </div>
+
+
+                <!-- File List -->
+                <ul class="list-group mb-4">
+                    {{ range .FileNameList }}
+                    <li class="list-group-item">{{ . }}</li>
+                    {{ end }}
+                </ul>
+
+                <!-- QR Code -->
+                <div class="d-flex justify-content-center align-items-center border rounded p-4 bg-light">
+                    <!-- Placeholder for QR Code -->
+                    <img src="data:image/png;base64,{{.QRcodeBase64}}" alt="QR Code" class="qr-code"
+                        onclick="toggleSize(this)">
+                </div>
+                {{ end }}
             </div>
-            <br>
-            <img src="data:image/png;base64,{{.QRcodeBase64}}" />
         </div>
     </div>
-    {{ end }}
-</div>
-{{end}}
 
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js">
+    </script>
 
-<script type="text/javascript"> const buttonPress = () => { copyToClipboard(document.getElementById("myInput").value); console.log('Clipboard updated 📥\nNow try pasting!'); };
-
-
-    <!-- <script> -->
-
-    const unsecuredCopyToClipboard = (text) => { const textArea = document.createElement("textarea"); textArea.value = text; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { document.execCommand('copy') } catch (err) { console.error('Unable to copy to clipboard', err) } document.body.removeChild(textArea) };
-
-    /**
-     * Copies the text passed as param to the system clipboard
-     * Check if using HTTPS and navigator.clipboard is available
-     * Then uses standard clipboard API, otherwise uses fallback
-    */
-    const copyToClipboard = (content) => {
-        if (window.isSecureContext && navigator.clipboard) {
-            navigator.clipboard.writeText(content);
-        } else {
-            unsecuredCopyToClipboard(content);
-        }
-    };
-
-
-    function copyToClipboard_1() {
-        // Get the text field
-        var linkToFile = document.getElementById("myInput").value;
-
-        navigator.clipboard.writeText(linkToFile)
-            .then(() => {
-                console.log('Text copied to clipboard:', linkToFile);
-                alert('Text copied to clipboard!');
-            })
-            .catch((err) => {
-                console.error('Failed to copy text:', err);
-                alert('Failed to copy text to clipboard.');
+    <script>
+        function copyLink() {
+            const fileLink = document.getElementById("fileLink").value;
+            navigator.clipboard.writeText(fileLink).then(() => {
+                alert("Link copied to clipboard!");
+            }).catch(() => {
+                alert("Failed to copy the link.");
             });
-    }
+        }
 
-    // function outFunc() {
-    //     var tooltip = document.getElementById("myTooltip");
-    //     tooltip.innerHTML = "Copy to clipboard";
-    // }
-</script>
+
+        // Function to toggle the size of the image
+        function toggleSize(image) {
+            image.classList.toggle('enlarged');
+        }
+    </script>
+</body>
+{{end}}
 {{end}}

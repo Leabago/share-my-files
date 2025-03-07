@@ -383,20 +383,20 @@ func writeMaxFileSize(maxFileSize string, logger *AppLogger) int64 {
 	fileName := filepath.Join(path, configFolderPath, maxFileSizeFileName)
 
 	// if file not exist, then create it with default values
-	if _, err := os.Stat(fileName); err != nil {
-		logger.infoLog.Printf("create file '%s' with max file size %s bytes", fileName, maxFileSize)
+	// if _, err := os.Stat(fileName); err != nil {
+	logger.infoLog.Printf("create file '%s' with max file size %s bytes", fileName, maxFileSize)
 
-		// fill default maxFileSize
-		var data []byte = []byte("var maxFileSize = " + maxFileSize + ";")
+	// fill default maxFileSize
+	var data []byte = []byte("var maxFileSize = " + maxFileSize + ";")
 
-		createFolderForFiles(fileDir, logger)
+	createFolderForFiles(fileDir, logger)
 
-		err = os.WriteFile(fileName, data, 0644)
-		if err != nil {
-			logger.errorLog.Fatal(err)
-		}
-
+	err = os.WriteFile(fileName, data, 0644)
+	if err != nil {
+		logger.errorLog.Fatal(err)
 	}
+
+	// }
 
 	maxFileSizeInt64, err := strconv.ParseInt(maxFileSize, 10, 64)
 
@@ -615,8 +615,8 @@ func getFullURL(r *http.Request, fileCode string) string {
 	}
 }
 
-// writeDdnsAddress create config file with ddns address
-func writeDdnsAddress(ddnsAddress string, logger *AppLogger) {
+// writeVariable create config file with javaScript variable
+func writeVariable(varValue string, fileName string, logger *AppLogger) {
 	// get current directory
 	path, err := os.Getwd()
 	if err != nil {
@@ -624,20 +624,20 @@ func writeDdnsAddress(ddnsAddress string, logger *AppLogger) {
 	}
 
 	fileDir := filepath.Join(path, configFolderPath)
-	fileName := filepath.Join(path, configFolderPath, ddnsAddressFileName)
+	filePath := filepath.Join(path, configFolderPath, fileName)
 
 	// if file not exist, then create it with default values
-	if _, err := os.Stat(fileName); err != nil {
-		logger.infoLog.Printf("create file '%s' with ddns address: %s", fileName, ddnsAddress)
+	// if _, err := os.Stat(fileName); err != nil {
+	logger.infoLog.Printf("create file '%s' with var: %s", fileName, varValue)
 
-		// fill ddns address
-		var data []byte = []byte("var ddnsAddress = '" + ddnsAddress + "';")
+	// fill ddns address
+	var data []byte = []byte(varValue)
 
-		createFolderForFiles(fileDir, logger)
+	createFolderForFiles(fileDir, logger)
 
-		err = os.WriteFile(fileName, data, 0644)
-		if err != nil {
-			logger.errorLog.Fatal(err)
-		}
+	err = os.WriteFile(filePath, data, 0644)
+	if err != nil {
+		logger.errorLog.Fatal(err)
 	}
+	// }
 }

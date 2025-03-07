@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"share-my-files/pkg/models/operation"
+	"strconv"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -65,15 +66,20 @@ func main() {
 	// createFolderForFiles(configFolderPath, logger)
 
 	// create file with ddns address for javascript
-	writeDdnsAddress(getEnv("DDNS_ADDRESS", logger), logger)
+	writeVariable("var ddnsAddress = '"+getEnv("DDNS_ADDRESS", logger)+"';", ddnsAddressFileName, logger)
+
 	// create file with maxFileSize for javascript
-	maxFileSize := writeMaxFileSize(getEnv("MAX_FILE_SIZE", logger), logger)
+	writeVariable("var maxFileSize = "+getEnv("MAX_FILE_SIZE", logger)+";", maxFileSizeFileName, logger)
+	maxFileSizeInt64, err := strconv.ParseInt(getEnv("MAX_FILE_SIZE", logger), 10, 64)
+	if err != nil {
+		logger.errorLog.Fatal(err)
+	}
 
 	app := &application{
 		logger:      logger,
 		files:       &operation.FileModel{},
 		redisClient: redisClient,
-		maxFileSize: maxFileSize,
+		maxFileSize: maxFileSizeInt64,
 	}
 
 	// delete files every 10 seconds

@@ -2,15 +2,20 @@
 {{define "title"}}Snippet{{end}}
 {{define "main"}}
 
-<div class="container">
-
-    <form action="/archive/null" method="get" id="formFindArchive" onsubmit="handleClick()">
-        <div align="center">
-            <label>Please write the file code: </label>
-            <input type='text' name='find' id="archiveId" required minlength="6" maxlength="6">
-            <input type="submit" value="Find" id="submitArchiveId" />
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <h1 class="mb-4">Please write the file code</h1>
+            <form action="/archive/null" method="get" id="formFindArchive" onsubmit="handleClick()">
+                <div class="input-group mb-3">
+                    <input type='text' name='find' id="archiveId" class="form-control"
+                        placeholder="Enter 6 character file code" pattern=".{6}" title="6 characters required" required
+                        placeholder="Enter file code">
+                    <input type="submit" class="btn btn-primary" value="Find" id="submitArchiveId" />
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 
 <script>
@@ -25,4 +30,5 @@
     }
 
 </script>
+
 {{end}}
