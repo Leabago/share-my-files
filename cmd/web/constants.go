@@ -40,9 +40,6 @@ const sessionIdTime = 30 * time.Minute
 // file for keep maxFileSize variable
 const maxFileSizeFileName = "max-file-size.js"
 
-// file for keep ddns address
-const ddnsAddressFileName = "ddns_address.js"
-
 // errors
 const bigFileMessage = "File size is too large, no more than %d megabytes allowed" // maxFileSize
 

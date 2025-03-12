@@ -65,11 +65,8 @@ func main() {
 	createFolderForFiles(folderPath, logger)
 	// createFolderForFiles(configFolderPath, logger)
 
-	// create file with ddns address for javascript
-	writeVariable("var ddnsAddress = '"+getEnv("DDNS_ADDRESS", logger)+"';", ddnsAddressFileName, logger)
-
 	// create file with maxFileSize for javascript
-	writeVariable("var maxFileSize = "+getEnv("MAX_FILE_SIZE", logger)+";", maxFileSizeFileName, logger)
+	writeVariable("var MAX_FILE_SIZE = "+getEnv("MAX_FILE_SIZE", logger)+";", maxFileSizeFileName, logger)
 	maxFileSizeInt64, err := strconv.ParseInt(getEnv("MAX_FILE_SIZE", logger), 10, 64)
 	if err != nil {
 		logger.errorLog.Fatal(err)

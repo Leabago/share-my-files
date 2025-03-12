@@ -1,4 +1,5 @@
 #!/bin/bash
+git pull
 echo "########################## build image"
 minikube image build -t share-my-files -f ./Dockerfile .
 echo "########################## apply deployment"
