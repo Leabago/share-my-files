@@ -1,86 +1,225 @@
 {{template "base" .}}
 {{define "title"}}Snippet{{end}}
 {{define "main"}}
+<title>File Download Page</title>
+
+<style>
+    /* Custom styles */
+    .file-list {
+        max-height: 200px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+    }
+
+    .qr-code {
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .qr-code.large {
+        transform: scale(1.5);
+    }
+
+    /* Define the rotation animation */
+    @keyframes rotate {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Apply the rotation animation to the arrow */
+    .rotating-arrow {
+        animation: rotate 4s linear infinite;
+        transform-origin: center;
+    }
+
+    .custom-btn {
+        display: flex !important;
+        align-items: center;
+        /* Aligns items vertically in the center */
+        justify-content: center;
+        /* Aligns items horizontally in the center */
+        gap: 5px;
+    }
+
+    /* Position the number "1" in the center of the SVG */
+    .number {
+        position: absolute;
+        left: 50%;
+        top: 58%;
+        transform: translate(-50%, -50%);
+        font-size: 20px;
+        color: white;
+        pointer-events: none;
+        font-family: "Lucida Console", "Courier New", monospace;
+    }
+
+    /* Container for the SVG and number */
+    .svg-container {
+        position: relative;
+    }
+
+    /* Hide the SVG when the "hidden" class is added */
+    .svg-container.hidden {
+        opacity: 0;
+        pointer-events: none;
+        /* Disable interactions */
+        transition: opacity 1.5s ease-in;
+        transition-delay: 2s;
+    }
+
+    /* Define the jump, roll, and move animation */
+    @keyframes jump-roll-move {
+        0% {
+            transform: translateY(0) rotate(0deg);
+        }
+
+        10% {
+            transform: translateY(-20px) rotate(0deg);
+        }
+
+        20% {
+            transform: translateY(0) rotate(0deg);
+        }
+
+        30% {
+            transform: translateY(-10px) rotate(0deg);
+        }
+
+        40% {
+            transform: translateY(0) rotate(0deg);
+        }
+
+        100% {
+            transform: translateX(-100px) rotate(-1440deg);
+        }
+    }
+
+    /* Apply the jump, roll, and move animation */
+    .svg-container.animate {
+        animation: jump-roll-move 5s ease forwards;
+    }
+</style>
 
 {{with .File}}
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-body">
+            <!-- Download Button -->
+            {{if .OneTimeDownload}}
+            <button id="loading-button" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
+            onclick="location.href='/archive/download/{{.FileCode}}';">
 
-<body class="bg-light">
-    <div class="container mt-5">
-        <div class="card shadow-lg">
-            <div class="card-body">
-                <!-- Download Button -->
-                {{if .OneDownload}}
-                <button id="downloadInput" class="btn btn-primary btn-lg w-100 mb-4 p-4"
-                    onclick="location.href='/archive/download/{{.FileCode}}';document.getElementById('downloadInput').disabled=true;">
-                    Download   
-                    <img src="../static/img/OneTimeIcon.png" alt="Icon" width="20" height="20" class="me-2">
-                </button>
-                {{else}}
-                <button id="downloadInput" class="btn btn-primary btn-lg w-100 mb-4 p-4"
-                    onclick="location.href='/archive/download/{{.FileCode}}';">
-                    Download
-                </button>
-                {{ end }}
+                <!-- Container for the rotating arrow and static number -->
+                <div class="svg-container">
+                    <!-- Rotating arrow SVG -->
+                    <svg class="rotating-arrow" width="26" height="26" viewBox="0 0 609.657 609.657"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <g>
+                            <g id="line_expanded_52_">
+                                <path
+                                    d="m590.605 304.828c-11.431 0-19.052 7.621-19.052 19.052-7.621 140.983-125.742 247.673-266.725 247.673-102.88 0-198.138-60.966-240.052-152.414h106.69c11.431 0 19.052-7.621 19.052-19.052s-7.621-19.052-19.052-19.052h-152.414c-11.431 0-19.052 7.621-19.052 19.052v152.414c0 11.431 7.621 19.052 19.052 19.052s19.052-7.621 19.052-19.052v-99.069c53.345 95.259 156.225 156.225 266.725 156.225 160.035 0 293.397-125.742 304.828-285.777 0-7.621-7.621-19.052-19.052-19.052z"
+                                    fill="#ffffff"></path>
+                                <path
+                                    d="m590.605 38.104c-11.431 0-19.052 7.621-19.052 19.052v99.069c-53.345-95.259-156.224-156.225-266.725-156.225-160.035 0-293.397 125.742-304.828 285.777 0 7.621 7.621 19.052 19.052 19.052 11.431 0 19.052-7.621 19.052-19.052 11.431-137.173 125.741-247.673 266.724-247.673 102.88 0 198.138 60.966 240.052 152.414h-106.69c-11.431 0-19.052 7.621-19.052 19.052s7.621 19.052 19.052 19.052h152.414c11.431 0 19.052-7.621 19.052-19.052v-152.415c.001-11.431-7.62-19.051-19.051-19.051z"
+                                    fill="#ffffff"></path>
+                            </g>
+                        </g>
+                    </svg>
+                    <!-- Static number "1" -->
+                    <div class="number">1</div>
+                </div>
+                <!-- Button text -->
+                Download
+            </button>
+            {{else}}
+            <button id="downloadInput" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
+                onclick="location.href='/archive/download/{{.FileCode}}';">
+                Download
+            </button>
+            {{ end }}
 
-                {{if not .Exist}}
-                <script>
-                    downloadInput = document.getElementById("downloadInput")
+            {{if not .Exist}}
+            <script>
+                downloadInput = document.getElementById("downloadInput")
+                if (downloadInput != null) {
                     downloadInput.disabled = true
-                </script>
-
-                <h4 class="text-center text-secondary mb-4">File with code '<strong>{{.FileCode}}</strong>' does not
-                    exist.</h2>
+                }
+            </script>
+            <h4 class="text-center text-secondary mb-4">File with code '<strong>{{.FileCode}}</strong>' does not
+                exist.</h2>
 
                 {{else}}
                 <!-- ZIP Name -->
                 <h4 class="text-center text-secondary mb-4">File code: '<strong>{{.FileCode}}</strong>'</h2>
 
+                    <!-- File Link with Copy Button -->
+                    <div class="input-group mb-4">
+                        <input type="text" class="form-control" id="fileLink" value={{.URL}} readonly>
+                        <button class="btn btn-success" onclick="copyLink()">Copy</button>
+                    </div>
 
-                <!-- File Link with Copy Button -->
-                <div class="input-group mb-4">
-                    <input type="text" class="form-control" id="fileLink" value={{.URL}} readonly>
-                    <button class="btn btn-success" onclick="copyLink()">Copy</button>
-                </div>
+                    <!-- File List -->
+                    <div class="mt-4">
+                        <h5>Uploaded files:</h5>
+                        <ul id="fileNames" class="list-group file-list">
+                            {{ range .FileNameList }}
+                            <li class="list-group-item">{{ . }}</li>
+                            {{ end }}
+                        </ul>
+                    </div>
 
-
-                <!-- File List -->
-                <ul class="list-group mb-4">
-                    {{ range .FileNameList }}
-                    <li class="list-group-item">{{ . }}</li>
+                    <!-- QR Code -->
+                    <div class="text-center justify-content-center align-items-center border rounded p-4 bg-light mt-4">
+                        <h5 class="mb-3">Scan QR Code to open this page:</h5>
+                        <!-- Placeholder for QR Code -->
+                        <img src="data:image/png;base64,{{.QRcodeBase64}}" alt="QR Code" class="qr-code img-fluid mb-3"
+                            onclick="toggleSize(this)">
+                    </div>
                     {{ end }}
-                </ul>
-
-                <!-- QR Code -->
-                <div class="d-flex justify-content-center align-items-center border rounded p-4 bg-light">
-                    <!-- Placeholder for QR Code -->
-                    <img src="data:image/png;base64,{{.QRcodeBase64}}" alt="QR Code" class="qr-code"
-                        onclick="toggleSize(this)">
-                </div>
-                {{ end }}
-            </div>
         </div>
     </div>
+</div>
 
-    <!-- Bootstrap Bundle JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js">
-    </script>
+<!-- Bootstrap Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js">
+</script>
 
-    <script>
-        function copyLink() {
-            const fileLink = document.getElementById("fileLink").value;
-            navigator.clipboard.writeText(fileLink).then(() => {
-                alert("Link copied to clipboard!");
-            }).catch(() => {
-                alert("Failed to copy the link.");
-            });
-        }
+<script>
+    function copyLink() {
+        const fileLink = document.getElementById("fileLink").value;
+        navigator.clipboard.writeText(fileLink).then(() => {
+            alert("Link copied to clipboard!");
+        }).catch(() => {
+            alert("Failed to copy the link.");
+        });
+    }
 
+    // Function to toggle the size of the image
+    function toggleSize(image) {
+        image.classList.toggle('large');
+    }
 
-        // Function to toggle the size of the image
-        function toggleSize(image) {
-            image.classList.toggle('enlarged');
-        }
-    </script>
-</body>
+    // one time download
+    // Add an event listener to the button
+    const button = document.getElementById('loading-button');
+    const svgContainer = document.querySelector('.svg-container');
+
+    if (button != null && svgContainer != null) {
+        button.addEventListener('click', () => {
+            // Add the "animate" class to trigger the jump, roll, and move animation
+            svgContainer.classList.add('animate');
+            svgContainer.classList.add('hidden');
+
+            // Optional: Disable the button after clicking
+            button.disabled = true;
+        });
+    }
+
+</script>
 {{end}}
 {{end}}

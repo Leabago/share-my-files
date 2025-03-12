@@ -19,8 +19,10 @@ func (app *application) routes() http.Handler {
 	mux.Get("/archive/:id", dynamicMiddleware.ThenFunc(app.showSnippet))
 	mux.Get("/archive/download/:id", dynamicMiddleware.ThenFunc(app.getSnippet))
 
+	mux.Get("/user-code", dynamicMiddleware.ThenFunc(app.getUserCode))
+
 	// delte one file from list
-	mux.Post("/delete/:name", dynamicMiddleware.ThenFunc(app.deleteOneFile))
+	mux.Del("/delete/:name", dynamicMiddleware.ThenFunc(app.deleteOneFile))
 	mux.Get("/download", dynamicMiddleware.ThenFunc(app.createDownloadForm))
 
 	// ping

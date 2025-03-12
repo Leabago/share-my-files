@@ -561,19 +561,19 @@ func addFileToZip(zipWriter *zip.Writer, folderPathFull, fileName string) error 
 }
 
 // selectLifeTime choose life time for file
-func selectLifeTime(selectedOption string) time.Duration {
+func selectLifeTime(selectedOption string) (bool, time.Duration) {
 	switch selectedOption {
 	case "1":
-		return mediumTime
+		return true, mediumTime
 	case "2":
-		return smallTime
+		return false, shortTime
 	case "3":
-		return mediumTime
+		return false, mediumTime
 	case "4":
-		return bigTime
+		return false, longerTime
+	default:
+		return false, shortTime
 	}
-
-	return smallTime
 }
 
 // isOneDownload return true if life time is one download

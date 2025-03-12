@@ -58,4 +58,4 @@ metadata:
   namespace: applications
 data:
   DDNS_ADDRESS: "http://diskbirds.tplinkdns.com"
-  MAX_FILE_SIZE: "10" # size in bytes
+  MAX_FILE_SIZE: "3145728" # size in bytes

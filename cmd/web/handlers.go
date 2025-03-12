@@ -15,6 +15,7 @@ import (
 func ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Ok"))
 }
+
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
 
 	// Generate a new session ID
@@ -46,7 +47,8 @@ func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request
 	http.SetCookie(w, &cookie)
 
 	app.render(w, r, "create.page.tmpl.html", &templateData{
-		Form: forms.New(nil),
+		Form:        forms.New(nil),
+		SessionCode: userCode,
 	})
 }
 
@@ -78,7 +80,7 @@ func (app *application) getSnippet(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filePath)
 
 		// delete file if it is for one download
-		if file.OneDownload {
+		if file.OneTimeDownload {
 			app.redisClient.HDel(app.getRedisPath(availablePath, fileCode), fileInfoTitle)
 		}
 	} else {
@@ -145,7 +147,9 @@ func (app *application) archive(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// select file lifetime by selected radio value
-	lifeTime := selectLifeTime(r.FormValue("options"))
+	oneTimeDownload, lifeTime := selectLifeTime(r.FormValue("storageDuration"))
+
+	fmt.Println("archive lifeTime: ", lifeTime)
 
 	// collect file information
 	fullURL := getFullURL(r, fileCode)
@@ -156,13 +160,14 @@ func (app *application) archive(w http.ResponseWriter, r *http.Request) {
 	}
 
 	file := &models.File{
-		Name:         folderBegin + fileCode + zipName,
-		FileCode:     fileCode,
-		FileNameList: fileNameList,
-		OneDownload:  isOneDownload(r.FormValue("options")),
-		Exist:        true,
-		URL:          fullURL,
-		QRcodeBase64: base64ImageData,
+		Name:            folderBegin + fileCode + zipName,
+		FileCode:        fileCode,
+		FileNameList:    fileNameList,
+		OneTimeDownload: oneTimeDownload,
+		Exist:           true,
+		URL:             fullURL,
+		QRcodeBase64:    base64ImageData,
+		LifeTime:        lifeTime.String(),
 	}
 
 	fileJson, err := json.Marshal(file)
@@ -173,9 +178,7 @@ func (app *application) archive(w http.ResponseWriter, r *http.Request) {
 	app.redisClient.HSet((app.getRedisPath(availablePath, fileCode)), fileInfoTitle, string(fileJson))
 	app.redisClient.Expire(app.getRedisPath(availablePath, fileCode), lifeTime).Result()
 
-	// redirect
-	redirectURL := filepath.Join("archive", fileCode)
-	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+	w.Write([]byte(fileCode))
 }
 
 // deleteOneFile delete only one file during session
@@ -190,4 +193,13 @@ func (app *application) deleteOneFile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.serverError(w, err)
 	}
+}
+
+func (app *application) getUserCode(w http.ResponseWriter, r *http.Request) {
+	_, fileCode, err := app.getSessionValue(r)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	w.Write([]byte(fileCode))
 }

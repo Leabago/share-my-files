@@ -10,6 +10,7 @@ import (
 type templateData struct {
 	File        *models.File
 	Form        *forms.Form
+	SessionCode string
 	CurrentYear int
 }
 

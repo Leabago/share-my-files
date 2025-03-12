@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-const pi = 3.14
-
 // port for aplication
 const APP_PORT = ":8080"
 
@@ -28,9 +26,9 @@ const session_id = "session_id"
 
 const fileInfoTitle = "fileInfo"
 
-const smallTime = 2 * time.Minute
+const shortTime = 2 * time.Minute
 const mediumTime = 1 * time.Hour
-const bigTime = 12 * time.Hour
+const longerTime = 12 * time.Hour
 
 // sessionIdTime lifetime for session
 const sessionIdTime = 30 * time.Minute
