@@ -24,11 +24,6 @@ spec:
         env:
         - name: REDIS_ADDR
           value: "redis.auxiliary.svc.cluster.local:6379"
-        - name: DDNS_ADDRESS
-          valueFrom:
-            configMapKeyRef:
-              name: app-config
-              key: DDNS_ADDRESS
         - name: MAX_FILE_SIZE
           valueFrom:
             configMapKeyRef:
@@ -57,5 +52,4 @@ metadata:
   name: app-config
   namespace: applications
 data:
-  DDNS_ADDRESS: "http://diskbirds.tplinkdns.com"
   MAX_FILE_SIZE: "3145728" # size in bytes

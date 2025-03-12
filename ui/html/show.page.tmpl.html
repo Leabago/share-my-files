@@ -112,7 +112,7 @@
             <!-- Download Button -->
             {{if .OneTimeDownload}}
             <button id="loading-button" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
-            onclick="location.href='/archive/download/{{.FileCode}}';">
+                onclick="location.href='/archive/download/{{.FileCode}}';">
 
                 <!-- Container for the rotating arrow and static number -->
                 <div class="svg-container">
@@ -191,12 +191,53 @@
 
 <script>
     function copyLink() {
-        const fileLink = document.getElementById("fileLink").value;
-        navigator.clipboard.writeText(fileLink).then(() => {
-            alert("Link copied to clipboard!");
-        }).catch(() => {
-            alert("Failed to copy the link.");
-        });
+        // Get the full URL of the current page
+        const fullUrl = window.location.href;
+
+        // Check if the browser supports navigator.clipboard (HTTPS only)
+        if (navigator.clipboard && window.isSecureContext) {
+            // Use the modern clipboard API for HTTPS
+            navigator.clipboard.writeText(fullUrl)
+                .then(() => {
+                    console.log("Link copied to clipboard using modern API.");
+                    alert("Link copied to clipboard!");
+                })
+                .catch((err) => {
+                    console.error("Failed to copy link using modern API:", err);
+                    fallbackCopyText(fullUrl); // Fallback to legacy method
+                });
+        } else {
+            // Use the legacy method for HTTP or unsupported browsers
+            fallbackCopyText(fullUrl);
+        }
+    }
+
+    // Fallback method for copying text (works in HTTP and older browsers)
+    function fallbackCopyText(text) {
+        // Create a temporary textarea element
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed"; // Prevent scrolling to the bottom
+        document.body.appendChild(textarea);
+
+        // Select and copy the text
+        textarea.select();
+        try {
+            const successful = document.execCommand("copy");
+            if (successful) {
+                console.log("Link copied to clipboard using fallback method.");
+                alert("Link copied to clipboard!");
+            } else {
+                console.error("Failed to copy link using fallback method.");
+                alert("Failed to copy link. Please copy it manually.");
+            }
+        } catch (err) {
+            console.error("Failed to copy link using fallback method:", err);
+            alert("Failed to copy link. Please copy it manually.");
+        }
+
+        // Clean up
+        document.body.removeChild(textarea);
     }
 
     // Function to toggle the size of the image
