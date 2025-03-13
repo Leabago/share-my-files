@@ -118,7 +118,7 @@
             </h2>
             {{else}}
                 <!-- ZIP Name -->
-                <h4 class="text-center text-secondary mb-4">File code: '<strong>{{.FileCode}}</strong>'</h2>
+                <h1 class="text-center mb-4">File code '<strong>{{.FileCode}}</strong>'</h2>
 
                     <!-- File Link with Copy Button -->
                     <div class="input-group mb-4">
@@ -137,10 +137,10 @@
                     </div>
 
                     <!-- QR Code -->
-                    <div class="text-center justify-content-center align-items-center border rounded p-4 bg-light mt-4">
-                        <h5 class="mb-3">Scan QR Code to open this page:</h5>
+                    <div class="text-center justify-content-center align-items-center border rounded p-4 bg-light mt-1">
+                        <h5 class="text-secondary mb-1">Scan QR Code to open this page</h5>
                         <!-- Placeholder for QR Code -->
-                        <img src="data:image/png;base64,{{.QRcodeBase64}}" alt="QR Code" class="qr-code img-fluid mb-3"
+                        <img src="data:image/png;base64,{{.QRcodeBase64}}" alt="QR Code" class="qr-code img-fluid"
                             onclick="toggleSize(this)">
                     </div>
 

@@ -26,9 +26,9 @@ const session_id = "session_id"
 
 const fileInfoTitle = "fileInfo"
 
-const shortTime = 2 * time.Minute
-const mediumTime = 1 * time.Hour
-const longerTime = 12 * time.Hour
+const shortTime = 6 * time.Hour
+const mediumTime = 24 * time.Hour
+const longerTime = 24 * 4 * time.Hour
 
 // sessionIdTime lifetime for session
 const sessionIdTime = 30 * time.Minute

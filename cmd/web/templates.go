@@ -15,7 +15,6 @@ type templateData struct {
 }
 
 func (app *application) newTemplateCache(dir string) (map[string]*template.Template, error) {
-	app.logger.infoLog.Printf("newTemplateCache")
 	cache := map[string]*template.Template{}
 
 	pages, err := filepath.Glob(filepath.Join(dir, "*page.tmpl.html"))
@@ -47,6 +46,6 @@ func (app *application) newTemplateCache(dir string) (map[string]*template.Templ
 	}
 
 	app.logger.infoLog.Println("cache:", cache)
-	app.logger.infoLog.Println("cache:")
+
 	return cache, nil
 }

@@ -63,7 +63,6 @@ func main() {
 
 	// create folders
 	createFolderForFiles(folderPath, logger)
-	// createFolderForFiles(configFolderPath, logger)
 
 	// create file with maxFileSize for javascript
 	writeVariable("var MAX_FILE_SIZE = "+getEnv("MAX_FILE_SIZE", logger)+";", maxFileSizeFileName, logger)
