@@ -222,6 +222,17 @@ func (app *application) deleteOneFile(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
+
+	// check if the file is in Archiving status
+	mutex.Lock()
+	state := sessionMap[sessionID]
+	if state.IsArchiving {
+		mutex.Unlock()
+		app.serverErrorCode(w, fmt.Errorf("upload is prohibited while archive is in progress"), http.StatusForbidden)
+		return
+	}
+	mutex.Unlock()
+
 	fullPath := filepath.Join(folderPath, sessionID, fileName)
 
 	// Check if the file exists

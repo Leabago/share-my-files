@@ -213,6 +213,21 @@
     console.log('Drag and drop zone disabled.');
   });
 
+      // Add a click event listener to the submit button
+      submitButton.addEventListener('click', () => {
+      // Get all buttons with the class "btn btn-sm btn-danger"
+      const buttons = document.querySelectorAll('.btn.btn-sm.btn-danger');
+
+      // Loop through the buttons and disable them
+      buttons.forEach(button => {
+        button.disabled = true; // Disable the button
+        button.classList.add('disabled'); // Add Bootstrap's disabled class (optional)
+      });
+
+      console.log('All buttons with class "btn btn-sm btn-danger" have been disabled.');
+    });
+
+
   // Handle files (add or reject)
   function handleFiles(newFiles) {
     const totalSize = files.reduce((sum, file) => sum + file.size, 0);

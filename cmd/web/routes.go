@@ -34,6 +34,8 @@ func (app *application) routes() http.Handler {
 
 	// delte one file from list
 	mux.Del("/delete/:name", dynamicMiddleware.ThenFunc(app.deleteOneFile))
+
+	// find file by sessionCode
 	mux.Get("/download", dynamicMiddleware.ThenFunc(app.createDownloadForm))
 
 	// ping
