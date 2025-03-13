@@ -1,7 +1,6 @@
-
 var approximateMaxFileSize = approximate(maxFileSize);
 document.getElementById("maxFileSize").textContent = approximateMaxFileSize;
-const bigFileMessage = "File size is too large, no more than " + approximateMaxFileSize + " allowed";
+const bigFileMessage = "The files are too big, no more than " + approximateMaxFileSize + " allowed";
 const minFileMessage = "Please upload the file";
 const smallFileMessage = "Please upload a larger file";
 const unknownFileMessage = "Unknown error";
@@ -17,9 +16,6 @@ for (var i = 0; i < navLinks.length; i++) {
 		break;
 	}
 }
-
-var submit = document.getElementById("submit")
-submit.disabled = true;
 
 
 // Создаем коллекцию файлов:
@@ -40,44 +36,85 @@ function handleFiles() {
 	const fileList = this.files; /* now you can work with the file list */
 
 	var uploadData = new FormData();
-
 	var count = 0
+	var errors = document.getElementById("errors")
+	errors.textContent = "";
+	const rejectedFiles = [];
 
-	console.log("count: ", count)
 
-	for (const file of fileList) {
-		var fileNew = new File([file], file.name, { type: file.type });
-		Object.defineProperty(fileNew, 'size', { value: file.size })
-		console.log("fileNew: ", fileNew.size)
-		dt.items.add(fileNew);
-		uploadData.append("files", fileNew);
-		count +=1
+	// Create a Set
+	const fileNameSet = new Set();
+	for (const file_dt of dt.files) {
+		fileNameSet.add(file_dt.name)
 	}
 
-	console.log("count2: ", count)
-	console.dir(dt.files);
+	for (const file of fileList) {
+		if (file.size = 0) {
+			continue
+		}
+
+		fileName = setFileName(fileNameSet, file.name)
+		var fileNew = new File([file], fileName, { type: file.type });
+		Object.defineProperty(fileNew, 'size', { value: file.size })
+
+		let numberOfBytes = 0;
+
+		for (const file_dt of dt.files) {
+			numberOfBytes += file_dt.size;
+		}
+
+		numberOfBytes += fileNew.size
 
 
-	console.log("handleFiles")
+		// check maxFileSize
+		if (numberOfBytes <= maxFileSize) {
+			dt.items.add(fileNew);
+			uploadData.append("files", fileNew);
+			count += 1
+		} else {
+			rejectedFiles.push(file.name)
+			continue
+		}
+	}
+
+	if (rejectedFiles.length > 0) {
+		errors.textContent = `Files [ ${rejectedFiles.map(file => `"${file}"`).join(", ")} ] not loaded. ` + bigFileMessage;
+	}
 
 	if (count != 0) {
-		console.log("handleFiles do update")
 		updateAll()
 		uploadAll(uploadData)
 	}
 
+	this.value = null
+}
+
+// setFileName return file name, add prefix if same name exists
+function setFileName(fileNameSet, fileName) {
+	updatedfileName = fileName
+	count = 0
+	while (fileNameSet.has(updatedfileName)) {
+		updatedfileName = "(" + count + ")" + fileName
+		count = count + 1
+	}
+
+	if (updatedfileName != fileName) {
+		fileNameSet.add(updatedfileName)
+	}
+
+	return updatedfileName
 }
 
 
-const output = document.getElementById("output");
-const input = document.getElementById("input");
+// const output = document.getElementById("output");
+// const input = document.getElementById("input");
 
 
 
 function updateAll() {
 	console.log("updateAll")
 	var submit = document.getElementById("submit")
-	submit.disabled = true;
+	// submit.disabled = true;
 
 	//delete the parent li
 	var ul = document.getElementById("output");
@@ -93,33 +130,33 @@ function updateAll() {
 
 		var divRow = document.createElement("div");
 		divRow.classList.add("row")
-		var divCol1 = document.createElement("div");
-		divCol1.classList.add("col-9")
+		var fileName = document.createElement("div");
+		fileName.classList.add("col-8")
 
 		// spinner
-		var divCol2 = document.createElement("div");
-		divCol2.classList.add("col-1")
+		var statusIcon = document.createElement("div");
+		statusIcon.classList.add("col-1")
 
 
-		var divCol3 = document.createElement("div");
-		divCol3.classList.add("col-1")
+		var trashIcon = document.createElement("div");
+		trashIcon.classList.add("col-1")
 
 		li.appendChild(divRow);
-		divRow.appendChild(divCol1);
-		divRow.appendChild(divCol2);
-		divRow.appendChild(divCol3);
+		divRow.appendChild(statusIcon);
+		divRow.appendChild(fileName);
+		divRow.appendChild(trashIcon);
 
-		var a = document.createElement("a");
-		a.id = "file_name"
-		a.textContent = setName(file.name);
-		divCol1.appendChild(a)
+		var fileNameText = document.createElement("p");
+		fileNameText.textContent = setName(file.name);
+		fileNameText.className = "truncate-text"
+		fileName.appendChild(fileNameText)
 
 		//   button
 		var btn = document.createElement("span");
 		btn.id = i;
 
 		btn.classList.add("bi-trash");
-		divCol3.appendChild(btn)
+		trashIcon.appendChild(btn)
 		output.appendChild(li);
 
 		i = i + 1;
@@ -139,33 +176,33 @@ function updateAll() {
 
 
 			fetch(ddnsAddress + "/delete/" + file.name, {
-				method: "post",			 
+				method: "post",
 			})
-			.catch((error) => ("Something went wrong!", error))
-			.then((response) => response.text().then(function (text) {
-				console.log("response text: " + text)
-			}))	
+				.catch((error) => ("Something went wrong!", error))
+				.then((response) => response.text().then(function (text) {
+					console.log("response text: " + text)
+				}))
 
 			// update after remove
 			updateAll()
 			console.dir(dt.files);
 		});
 
- 
 
-		    // Create the div element
-			let spinner = document.createElement("div");
-			spinner.className = "spinner-border spinner-border-sm";
-			spinner.setAttribute("role", "status");
-		
-			// Create the span element
-			let span = document.createElement("span");
-			span.className = "visually-hidden";
-			span.textContent = "Loading...";
-		
-			// Append the span inside the div
-			spinner.appendChild(span);
-			divCol2.appendChild(spinner)
+
+		// Create the div element
+		let spinner = document.createElement("div");
+		spinner.className = "spinner-border spinner-border-sm";
+		spinner.setAttribute("role", "status");
+
+		// Create the span element
+		let span = document.createElement("span");
+		span.className = "visually-hidden";
+		span.textContent = "Loading...";
+
+		// Append the span inside the div
+		spinner.appendChild(span);
+		statusIcon.appendChild(spinner)
 
 	}
 
@@ -174,9 +211,7 @@ function updateAll() {
 	document.getElementById("fileSize").textContent = outputSize;
 	// size 
 
-
-
-	checkSize(numberOfBytes)
+	// checkSize(numberOfBytes)
 }
 
 
@@ -192,33 +227,7 @@ function uploadAll(uploadData) {
 			console.log("response text: (" + text + ")")
 		}))
 }
- 
 
-function checkSize(numberOfBytes) {
-	var checkMaxSize = numberOfBytes <= maxFileSize
-	var checkMinSize = numberOfBytes > 0
-	var submit = document.getElementById("submit")
-	var errors = document.getElementById("errors")
-
-	// check
-	if (checkMaxSize && checkMinSize) {
-		errors.textContent = "";
-		submit.disabled = false;
-		return true;
-	} else {
-		if (!checkMaxSize) {
-			errors.textContent = bigFileMessage;
-		} else if (!checkMinSize && dt.files.length == 0) {
-			errors.textContent = minFileMessage;
-		} else if (dt.files.length > 0 && !checkMinSize) {
-			errors.textContent = smallFileMessage;
-		} else {
-			errors.textContent = unknownFileMessage;
-		}
-		submit.disabled = true;
-		return false;
-	}
-}
 
 // Approximate to the closest prefixed unit
 function approximate(numberOfBytes) {
@@ -262,7 +271,7 @@ function setName(name) {
 
 function validateMyForm() {
 
-	console.log("validateMyForm")
+
 
 	var submit = document.getElementById("submit")
 	submit.disabled = true;
@@ -283,7 +292,7 @@ function validateMyForm() {
 		.catch((error) => ("Something went wrong!", error))
 		.then((response) => response.text().then(function (text) {
 			console.log("response text: " + text)
-			window.location.href = ddnsAddress+ "/archive/" + text;
+			window.location.href = ddnsAddress + "/archive/" + text;
 		}))
 
 }

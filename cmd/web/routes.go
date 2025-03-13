@@ -2,9 +2,20 @@ package main
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/bmizerany/pat"
 	"github.com/justinas/alice"
+)
+
+// SessionState tracks the state of each session
+type SessionState struct {
+	IsArchiving bool
+}
+
+var (
+	sessionMap = make(map[string]*SessionState) // Maps session_id to SessionState
+	mutex      = &sync.Mutex{}                  // Protects access to sessionMap
 )
 
 func (app *application) routes() http.Handler {
@@ -19,8 +30,12 @@ func (app *application) routes() http.Handler {
 	mux.Get("/archive/:id", dynamicMiddleware.ThenFunc(app.showSnippet))
 	mux.Get("/archive/download/:id", dynamicMiddleware.ThenFunc(app.getSnippet))
 
+	mux.Get("/user-code", dynamicMiddleware.ThenFunc(app.getUserCode))
+
 	// delte one file from list
-	mux.Post("/delete/:name", dynamicMiddleware.ThenFunc(app.deleteOneFile))
+	mux.Del("/delete/:name", dynamicMiddleware.ThenFunc(app.deleteOneFile))
+
+	// find file by sessionCode
 	mux.Get("/download", dynamicMiddleware.ThenFunc(app.createDownloadForm))
 
 	// ping

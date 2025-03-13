@@ -18,18 +18,24 @@ spec:
       containers:
       - image: share-my-files
         name: share-my-files
+        volumeMounts:
+          - name: my-storage
+            mountPath: /tmp/share-my-files
         ports:
         - containerPort: 8080
         imagePullPolicy: Never
         env:
         - name: REDIS_ADDR
           value: "redis.auxiliary.svc.cluster.local:6379"
-        - name: DDNS_ADDRESS
+        - name: MAX_FILE_SIZE
           valueFrom:
             configMapKeyRef:
               name: app-config
-              key: DDNS_ADDRESS
-
+              key: MAX_FILE_SIZE
+      volumes:
+        - name: my-storage
+          persistentVolumeClaim:
+            claimName: share-my-files
 ---
 apiVersion: v1
 kind: Service
@@ -52,4 +58,35 @@ metadata:
   name: app-config
   namespace: applications
 data:
-  DDNS_ADDRESS: "http://diskbirds.tplinkdns.com"
+  MAX_FILE_SIZE: "3145728" # size in bytes
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: share-my-files
+  namespace: applications
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: standard
+  hostPath:
+    path: /mnt/share-my-files
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: share-my-files
+  namespace: applications
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+  storageClassName: standard
+ 

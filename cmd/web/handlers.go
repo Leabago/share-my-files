@@ -15,6 +15,7 @@ import (
 func ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Ok"))
 }
+
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
 
 	// Generate a new session ID
@@ -23,6 +24,12 @@ func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request
 		app.logger.errorLog.Fatal(err)
 		return
 	}
+
+	mutex.Lock()
+	if _, exists := sessionMap[sessionID]; !exists {
+		sessionMap[sessionID] = &SessionState{IsArchiving: false}
+	}
+	mutex.Unlock()
 
 	// create unique user code assosiated with files
 	userCode := createUserCode()
@@ -46,7 +53,8 @@ func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request
 	http.SetCookie(w, &cookie)
 
 	app.render(w, r, "create.page.tmpl.html", &templateData{
-		Form: forms.New(nil),
+		Form:        forms.New(nil),
+		SessionCode: userCode,
 	})
 }
 
@@ -78,7 +86,7 @@ func (app *application) getSnippet(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filePath)
 
 		// delete file if it is for one download
-		if file.OneDownload {
+		if file.OneTimeDownload {
 			app.redisClient.HDel(app.getRedisPath(availablePath, fileCode), fileInfoTitle)
 		}
 	} else {
@@ -89,17 +97,28 @@ func (app *application) getSnippet(w http.ResponseWriter, r *http.Request) {
 // homeGetFiles upload files to zip
 func (app *application) homeGetFiles(w http.ResponseWriter, r *http.Request) {
 
-	sessionID, userCode, err := app.getSessionValue(r)
+	sessionID, sessionCode, err := app.getSessionValue(r)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
+
+	// check if the file is in Archiving status
+	mutex.Lock()
+	state := sessionMap[sessionID]
+	if state.IsArchiving {
+		mutex.Unlock()
+		app.serverErrorCode(w, fmt.Errorf("upload is prohibited while archive is in progress"), http.StatusForbidden)
+		return
+	}
+	mutex.Unlock()
 
 	var folderPathFull = filepath.Join(folderPath, sessionID)
 	app.logger.infoLog.Printf("create new folder %s", folderPathFull)
 
 	_, err = saveFilesToFolder(r, folderPathFull, app.maxFileSize)
 	if err != nil {
-		if errors.Is(err, fileTooLarge) {
+		if errors.Is(err, errFileTooLarge) {
 			app.fileTooLarge(w, err)
 		} else {
 			app.serverError(w, err)
@@ -107,7 +126,7 @@ func (app *application) homeGetFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(userCode))
+	w.Write([]byte(sessionCode))
 }
 
 func (app *application) redirectToArchive(w http.ResponseWriter, r *http.Request) {
@@ -136,16 +155,32 @@ func (app *application) archive(w http.ResponseWriter, r *http.Request) {
 	sessionID, fileCode, err := app.getSessionValue(r)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
+
+	// check if the file is in Archiving status
+	mutex.Lock()
+	state := sessionMap[sessionID]
+	if state.IsArchiving {
+		mutex.Unlock()
+		app.serverErrorCode(w, fmt.Errorf("archive operation is already in progress"), http.StatusConflict)
+		return
+	}
+
+	// Set the archiving flag
+	state.IsArchiving = true
+	sessionMap[sessionID] = state
+	mutex.Unlock()
 
 	// create zip archive with files
 	fileNameList, err := createArhive(sessionID, fileCode)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	// select file lifetime by selected radio value
-	lifeTime := selectLifeTime(r.FormValue("options"))
+	oneTimeDownload, lifeTime := selectLifeTime(r.FormValue("storageDuration"))
 
 	// collect file information
 	fullURL := getFullURL(r, fileCode)
@@ -153,29 +188,30 @@ func (app *application) archive(w http.ResponseWriter, r *http.Request) {
 	base64ImageData, err := createBase64ImageData(fullURL)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	file := &models.File{
-		Name:         folderBegin + fileCode + zipName,
-		FileCode:     fileCode,
-		FileNameList: fileNameList,
-		OneDownload:  isOneDownload(r.FormValue("options")),
-		Exist:        true,
-		URL:          fullURL,
-		QRcodeBase64: base64ImageData,
+		Name:            folderBegin + fileCode + zipName,
+		FileCode:        fileCode,
+		FileNameList:    fileNameList,
+		OneTimeDownload: oneTimeDownload,
+		Exist:           true,
+		URL:             fullURL,
+		QRcodeBase64:    base64ImageData,
+		LifeTime:        lifeTime.String(),
 	}
 
 	fileJson, err := json.Marshal(file)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	app.redisClient.HSet((app.getRedisPath(availablePath, fileCode)), fileInfoTitle, string(fileJson))
 	app.redisClient.Expire(app.getRedisPath(availablePath, fileCode), lifeTime).Result()
 
-	// redirect
-	redirectURL := filepath.Join("archive", fileCode)
-	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+	w.Write([]byte(fileCode))
 }
 
 // deleteOneFile delete only one file during session
@@ -184,10 +220,40 @@ func (app *application) deleteOneFile(w http.ResponseWriter, r *http.Request) {
 	sessionID, _, err := app.getSessionValue(r)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
+
+	// check if the file is in Archiving status
+	mutex.Lock()
+	state := sessionMap[sessionID]
+	if state.IsArchiving {
+		mutex.Unlock()
+		app.serverErrorCode(w, fmt.Errorf("upload is prohibited while archive is in progress"), http.StatusForbidden)
+		return
+	}
+	mutex.Unlock()
+
 	fullPath := filepath.Join(folderPath, sessionID, fileName)
+
+	// Check if the file exists
+	if _, err := os.Stat(fileName); errors.Is(err, os.ErrNotExist) {
+		app.serverErrorCode(w, err, http.StatusNotFound)
+		return
+	}
+
 	err = os.Remove(fullPath)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
+}
+
+func (app *application) getUserCode(w http.ResponseWriter, r *http.Request) {
+	_, fileCode, err := app.getSessionValue(r)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	w.Write([]byte(fileCode))
 }

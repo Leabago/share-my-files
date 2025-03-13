@@ -1,85 +1,486 @@
 {{template "base" .}}
 {{define "title"}}Create a New Snippet{{end}}
 {{define "main"}}
+<title>File Upload Page</title>
+<style>
+  .drop-zone {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    background-color: #e9ecef;
+    color: #6c757d;
+  }
 
-<div class="container">
+  .drop-zone:hover,
+  .drop-zone.dragover {
+    border-color: #0d6efd;
+    background-color: #e9f0ff;
+  }
 
-  <!-- <form method="post" enctype="multipart/form-data" action="archive" onsubmit="return validateMyForm();" id="form-for-send-files"> -->
-  <form method="post" enctype="multipart/form-data" action="archive" id="form-for-send-files">
-    <div class="row">
-      <div class="col">
-        <div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
-          <input type="file" id="input" name='input' multiple style="display:none" />
-          <button id="fileSelect" type="button" class="btn btn-success">Select some files</button>
+  .progress {
+    height: 25px;
+    margin-bottom: 20px;
+  }
+
+  .progress-bar {
+    transition: width 0.3s ease;
+  }
+
+  .file-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+  }
+
+  .file-list .list-group-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .file-list .list-group-item .file-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .file-list .list-group-item .file-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+</style>
+<!-- <h1 class="text-center mb-4">User Code2: {{.SessionCode}}</h1> -->
+<!-- <p id="sessionCode" hidden>{{.SessionCode}}</p> -->
+<input type="hidden" id="sessionCode" value={{.SessionCode}}>
+
+<!-- scripts with -->
+<script src="../static/js/max-file-size.js" type="text/javascript"></script>
+
+
+<script>
+  const maxSizeBytes = MAX_FILE_SIZE; // max in bytes
+  const maxSizeMB = maxSizeBytes / 1024 / 1024; // Maximum allowed size in MB
+
+  // Get the current URL
+  const currentUrl = window.location.href;
+
+  // Parse the URL using the URL object
+  const url = new URL(currentUrl);
+
+  // Extract the hostname (e.g., "subdomain.example.com")
+  const hostname = url.hostname;
+
+  // Get the full hostname with protocol (e.g., "https://example.com")
+  const fullHostname = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port;
+
+  // Log the full hostname to the console
+  console.log("Full Hostname:", fullHostname);
+
+  // Use the full hostname as needed
+  if (fullHostname.startsWith("https://")) {
+    console.log("Secure connection (HTTPS) detected.");
+  } else if (fullHostname.startsWith("http://")) {
+    console.log("Insecure connection (HTTP) detected.");
+  }
+
+
+</script>
+
+<div class="container mt-5">
+  <h1 class="text-center mb-4">File Upload</h1>
+  <div class="card shadow">
+    <div class="card-body">
+      <!-- Drag and Drop Zone -->
+      <div class="drop-zone rounded" id="dropZone">
+        <p class="text-muted">Drag and drop files here or click to select files.</p>
+      </div>
+      <input type="file" id="fileInput" multiple class="d-none">
+
+      <!-- Progress Bar -->
+      <div class="progress mt-4">
+        <div id="progressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%;"></div>
+      </div>
+      <p class="text-muted text-center" id="progressText">0 MB / 100 MB</p>
+
+      <!-- File List -->
+      <div class="mt-4">
+        <h5>Selected Files:</h5>
+        <ul id="fileNames" class="list-group file-list"></ul>
+      </div>
+
+      <!-- Storage Options -->
+      <div class="mt-4">
+        <label class="form-label">Store files for:</label>
+        <div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="storageDuration" id="storageDuration1" value="1">
+            <label class="form-check-label" for="storageDuration1">One time download</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="storageDuration" id="storageDuration2" value="2" checked>
+            <label class="form-check-label" for="storageDuration2">6 hours</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="storageDuration" id="storageDuration3" value="3">
+            <label class="form-check-label" for="storageDuration3">1 day</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="storageDuration" id="storageDuration4" value="4">
+            <label class="form-check-label" for="storageDuration4">4 days</label>
+          </div>
         </div>
       </div>
 
-      <div class="col">
-        <p>List of selected files:</p>
-        <ul id="output"></ul>
+      <!-- Submit Button -->
+      <button id="submitButton" class="btn btn-primary mt-4 w-100">Submit Files</button>
 
-        <!-- <p id="sizeok">false</p> -->
-        <p>
-          <label for="errors"></label>
-          <output id="errors" style="color:red;"></output>
-        </p>
-
-        {{with .Form.Errors.Get "title" }}
-        <p>
-          <label class="errors" style="color:red;">{{.}} </label>
-        </p>
-        {{end}}
+      <!-- Success Modal -->
+      <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="successModalLabel">Success!</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              Files submitted successfully! You will be redirected in <span id="countdown">5</span> seconds.
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" id="redirectNowButton">Redirect Now</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="row">
-
-      <div class="col">
-
-        <p>
-          <label for="fileSize">Total size:</label>
-          <output id="fileSize">0</output>
-        </p>
-
-        <p>
-          <label for="maxFileSize">Max size:</label>
-          <output id="maxFileSize">0</output>
-        </p>
-
-        <p>
-          <label for="errors"></label>
-          <output id="errors" style="color:red;"></output>
-        </p>
-      </div>
-
-      <div class="col">
-
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="radio" name="options" id="option1" value="1">
-          <label class="form-check-label" for="option1">1 download</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="radio" name="options" id="option2" value="2" checked>
-          <label class="form-check-label" for="option2">3 hour</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="radio" name="options" id="option3" value="3">
-          <label class="form-check-label" for="option3">1 day</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="radio" name="options" id="option4" value="4">
-          <label class="form-check-label" for="option4">3 days</label>
-        </div> 
-
-        <br>
-        <br>
-
-        <button id="submit" type="submit" class="btn btn-primary">save</button>
-
-        <!-- <button id="submit">Submit</button> -->
-      </div>
-    </div>
-  </form>
+  </div>
 </div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+<!-- scripts with -->
+<script src="../static/js/max-file-size.js" type="text/javascript"></script>
+
+<script>
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const fileNames = document.getElementById('fileNames');
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  const submitButton = document.getElementById('submitButton');
+  let files = [];
+
+  progressText.textContent = `0/ ${maxSizeMB} MB`;
+
+  // Handle drag and drop events
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  // Handle file input change
+  fileInput.addEventListener('change', () => {
+    handleFiles(fileInput.files);
+    fileInput.value = null; // Reset the file input to allow selecting the same file again
+  });
+
+  // Click drop zone to open file dialog
+  dropZone.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+
+  // Disable the drop zone and file input when the submit button is clicked
+  submitButton.addEventListener('click', () => {
+    dropZone.classList.add('disabled');
+    dropZone.style.pointerEvents = 'none'; // Disable pointer events
+    fileInput.disabled = true; // Disable the file input
+    console.log('Drag and drop zone disabled.');
+  });
+
+  // Add a click event listener to the submit button
+  submitButton.addEventListener('click', () => {
+    // Get all buttons with the class "btn btn-sm btn-danger"
+    const buttons = document.querySelectorAll('.btn.btn-sm.btn-danger');
+
+    // Loop through the buttons and disable them
+    buttons.forEach(button => {
+      button.disabled = true; // Disable the button
+      button.classList.add('disabled'); // Add Bootstrap's disabled class (optional)
+    });
+
+    console.log('All buttons with class "btn btn-sm btn-danger" have been disabled.');
+  });
+
+
+  // Handle files (add or reject)
+  function handleFiles(newFiles) {
+    const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+    const newSize = Array.from(newFiles).reduce((sum, file) => sum + file.size, 0);
+    let list = new DataTransfer();
+
+    if (totalSize + newSize > maxSizeBytes) {
+      alert(`Total size exceeds the maximum limit of ${maxSizeMB} MB.`);
+      return;
+    }
+
+    // Add files to the container
+    Array.from(newFiles).forEach(file => {
+      const uniqueName = getUniqueFileName(file.name);
+
+      const renamedFile = new File([file], uniqueName, { type: file.type });
+      list.items.add(renamedFile);
+
+      files.push({
+        name: uniqueName,
+        size: file.size,
+        status: 'pending', // Upload status: pending, uploading, uploaded, failed
+        file: file, // The actual File object
+      });
+    });
+
+
+    updateFileList();
+    uploadFiles(list.files);
+  }
+
+  // Format file size to show bytes, KB, or MB
+  function formatFileSize(size) {
+    if (size < 1024) {
+      return `${size} bytes`; // Show size in bytes for files smaller than 1 KB
+    } else if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(2)} KB`; // Show size in KB for files smaller than 1 MB
+    } else {
+      return `${(size / 1024 / 1024).toFixed(2)} MB`; // Show size in MB for larger files
+    }
+  }
+
+
+  // Update file list and progress bar
+  function updateFileList() {
+    fileNames.innerHTML = '';
+    const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+
+    // Update progress bar and text
+    const progressPercentage = (totalSize / maxSizeBytes) * 100;
+    progressBar.style.width = `${progressPercentage}%`;
+    progressText.textContent = `${formatFileSize(totalSize)} / ${maxSizeMB} MB`;
+
+    // Add files to the list
+    files.forEach((file, index) => {
+      const li = document.createElement('li');
+      li.className = 'list-group-item';
+
+      // File info (icon and name)
+      const fileInfo = document.createElement('div');
+      fileInfo.className = 'file-info';
+      fileInfo.innerHTML = `
+          <i class="bi bi-file-earmark"></i>
+          <span>${file.name} (${formatFileSize(file.size)})</span>
+        `;
+
+      // File actions (status icon and delete button)
+      const fileActions = document.createElement('div');
+      fileActions.className = 'file-actions';
+      fileActions.innerHTML = `
+          <i class="bi ${getStatusIcon(file.status)}" id="status-${index}"></i>
+          <button class="btn btn-sm btn-danger" onclick="deleteFile(${index})">
+            <i class="bi bi-trash"></i>
+          </button>
+        `;
+
+      // Append elements to list item
+      li.appendChild(fileInfo);
+      li.appendChild(fileActions);
+      fileNames.appendChild(li);
+    });
+  }
+
+  // Get status icon based on upload status
+  function getStatusIcon(status) {
+    switch (status) {
+      case 'pending':
+        return 'bi-upload text-muted';
+      case 'uploading':
+        return 'bi-arrow-repeat text-primary';
+      case 'uploaded':
+        return 'bi-check-circle text-success';
+      case 'failed':
+        return 'bi-x-circle text-danger';
+      default:
+        return 'bi-upload text-muted';
+    }
+  }
+
+  // Upload files to the backend
+  async function uploadFiles(newFiles) {
+    console.log("uploadFiles")
+    console.log("newFiles: ", newFiles)
+    console.log("files: ", files)
+    // for (const file of newFiles) {
+    for (let i = 0; i < newFiles.length; i++) {
+      const formData = new FormData();
+      formData.append('file', newFiles[i]);
+
+      const fileIndex = files.length - newFiles.length + i
+
+      // Update status to "uploading"
+      files[fileIndex].status = 'uploading';
+      updateFileList();
+
+      try {
+        const response = await fetch(fullHostname + '/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          files[fileIndex].status = 'uploaded'; // Update status to "uploaded"
+        } else {
+          throw new Error('Upload failed');
+        }
+      } catch (error) {
+        files[fileIndex].status = 'failed'; // Update status to "failed"
+        console.error('Error uploading file:', error);
+      } finally {
+        updateFileList(); // Refresh the file list
+      }
+    }
+  }
+
+  // Delete file from the container
+  function deleteFile(index) {
+    const file = files[index];
+    files.splice(index, 1); // Remove the file from the container
+    updateFileList();
+
+    // Notify backend to delete the file
+    fetch(fullHostname + `/delete/${file.name}`, {
+      method: 'DELETE',
+    })
+      .then((response) => {
+        if (!response.ok) {
+          console.error('Failed to delete file from backend');
+        }
+      })
+      .catch((error) => {
+        console.error('Error deleting file:', error);
+      });
+  }
+
+  // Submit files and redirect if all files are uploaded
+  submitButton.addEventListener('click', async () => {
+
+    console.log("submitButton")
+
+    if (files.length === 0) {
+      alert('Please select files to upload.');
+      return;
+    }
+
+    // Check if all files are uploaded
+    const allFilesUploaded = files.every(file => file.status === 'uploaded');
+
+
+    console.log("files: ", files)
+    console.log("allFilesUploaded: ", allFilesUploaded)
+
+    if (!allFilesUploaded) {
+      alert('Please wait until all files are uploaded.');
+      return;
+    }
+
+    // Get the selected radio button value
+    const selectedStorageDuration = document.querySelector('input[name="storageDuration"]:checked').value;
+
+    // Create FormData object
+    const formData = new FormData();
+
+    // Append storage duration to FormData
+    formData.append('storageDuration', selectedStorageDuration);
+
+    try {
+      // Send POST request to the backend
+      const response = await fetch(fullHostname + '/archive', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit files');
+      }
+
+      // set disabled
+      submitButton.disabled = true;
+
+      // Handle successful response
+      const sessionCode = await response.text(); // Get the response as plain text
+      console.log('Response:', sessionCode);
+
+      // Show the success modal
+      const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+      successModal.show();
+
+
+      // Start countdown for redirect
+      let countdown = 5;
+      const countdownElement = document.getElementById('countdown');
+      const countdownInterval = setInterval(() => {
+        countdown--;
+        countdownElement.textContent = countdown;
+
+        if (countdown <= 0) {
+          clearInterval(countdownInterval);
+          // Redirect to the archive page
+          window.location.href = fullHostname + `/archive/${sessionCode}`;
+        }
+      }, 1000); // Update every second
+
+
+      // Add event listener for the "Redirect Now" button
+      const redirectNowButton = document.getElementById('redirectNowButton');
+      redirectNowButton.addEventListener('click', () => {
+        clearInterval(countdownInterval); // Stop the countdown
+        window.location.href = fullHostname + `/archive/${sessionCode}`;
+      });
+
+    } catch (error) {
+      alert('Failed to submit files. Please try again.');
+      console.error('Error:', error);
+    }
+  });
+
+  // Generate a unique file name if the same file is added multiple times
+  function getUniqueFileName(fileName) {
+    let count = 1;
+    let uniqueName = fileName;
+
+    while (files.some(file => file.name === uniqueName)) {
+      const extensionIndex = fileName.lastIndexOf('.');
+      const name = extensionIndex !== -1 ? fileName.slice(0, extensionIndex) : fileName;
+      const extension = extensionIndex !== -1 ? fileName.slice(extensionIndex) : '';
+      uniqueName = `${name} (${count})${extension}`;
+      count++;
+    }
+
+    return uniqueName;
+  }
+
+</script>
 
 {{end}}

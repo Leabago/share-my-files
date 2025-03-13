@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"share-my-files/pkg/models/operation"
+	"strconv"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -25,7 +26,7 @@ type application struct {
 
 	templateCache map[string]*template.Template
 
-	maxFileSize int
+	maxFileSize int64
 }
 
 type AppLogger struct {
@@ -35,7 +36,7 @@ type AppLogger struct {
 }
 
 func main() {
-	fmt.Println("start share-my-files! ddns")
+	fmt.Println("start share-my-files! defects")
 
 	// create logger
 	logFormat := log.Ldate | log.Ltime | log.Lshortfile
@@ -64,14 +65,18 @@ func main() {
 	createFolderForFiles(folderPath, logger)
 	// createFolderForFiles(configFolderPath, logger)
 
-	// create file with ddns address for javascript
-	writeDdnsAddress(getEnv("DDNS_ADDRESS", logger), logger)
+	// create file with maxFileSize for javascript
+	writeVariable("var MAX_FILE_SIZE = "+getEnv("MAX_FILE_SIZE", logger)+";", maxFileSizeFileName, logger)
+	maxFileSizeInt64, err := strconv.ParseInt(getEnv("MAX_FILE_SIZE", logger), 10, 64)
+	if err != nil {
+		logger.errorLog.Fatal(err)
+	}
 
 	app := &application{
 		logger:      logger,
 		files:       &operation.FileModel{},
 		redisClient: redisClient,
-		maxFileSize: writeFileSize(logger),
+		maxFileSize: maxFileSizeInt64,
 	}
 
 	// delete files every 10 seconds
