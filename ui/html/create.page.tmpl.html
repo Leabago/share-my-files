@@ -58,7 +58,7 @@
 
 <!-- scripts with -->
 <script src="../static/js/max-file-size.js" type="text/javascript"></script>
- 
+
 
 <script>
   const maxSizeBytes = MAX_FILE_SIZE; // max in bytes
@@ -202,6 +202,15 @@
   // Click drop zone to open file dialog
   dropZone.addEventListener('click', () => {
     fileInput.click();
+  });
+
+
+  // Disable the drop zone and file input when the submit button is clicked
+  submitButton.addEventListener('click', () => {
+    dropZone.classList.add('disabled');
+    dropZone.style.pointerEvents = 'none'; // Disable pointer events
+    fileInput.disabled = true; // Disable the file input
+    console.log('Drag and drop zone disabled.');
   });
 
   // Handle files (add or reject)

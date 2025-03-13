@@ -131,6 +131,13 @@ func (app *application) serverError(w http.ResponseWriter, err error) {
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
+func (app *application) serverErrorCode(w http.ResponseWriter, err error, code int) {
+	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
+	// app.errorLog.Println(trace)
+	app.logger.errorLog.Output(2, trace)
+	http.Error(w, http.StatusText(http.StatusInternalServerError), code)
+}
+
 func (app *application) fileTooLarge(w http.ResponseWriter, err error) {
 	app.logger.infoLog.Output(1, err.Error())
 	http.Error(w, err.Error(), http.StatusRequestEntityTooLarge)

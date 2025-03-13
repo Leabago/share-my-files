@@ -14,10 +14,12 @@
     .qr-code {
         cursor: pointer;
         transition: transform 0.3s ease;
+        width: 100px;
+        height: 100px;
     }
 
     .qr-code.large {
-        transform: scale(1.5);
+        transform: scale(3);
     }
 
     /* Define the rotation animation */
@@ -109,51 +111,12 @@
 <div class="container mt-5">
     <div class="card shadow-lg">
         <div class="card-body">
-            <!-- Download Button -->
-            {{if .OneTimeDownload}}
-            <button id="loading-button" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
-                onclick="location.href='/archive/download/{{.FileCode}}';">
-
-                <!-- Container for the rotating arrow and static number -->
-                <div class="svg-container">
-                    <!-- Rotating arrow SVG -->
-                    <svg class="rotating-arrow" width="26" height="26" viewBox="0 0 609.657 609.657"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <g>
-                            <g id="line_expanded_52_">
-                                <path
-                                    d="m590.605 304.828c-11.431 0-19.052 7.621-19.052 19.052-7.621 140.983-125.742 247.673-266.725 247.673-102.88 0-198.138-60.966-240.052-152.414h106.69c11.431 0 19.052-7.621 19.052-19.052s-7.621-19.052-19.052-19.052h-152.414c-11.431 0-19.052 7.621-19.052 19.052v152.414c0 11.431 7.621 19.052 19.052 19.052s19.052-7.621 19.052-19.052v-99.069c53.345 95.259 156.225 156.225 266.725 156.225 160.035 0 293.397-125.742 304.828-285.777 0-7.621-7.621-19.052-19.052-19.052z"
-                                    fill="#ffffff"></path>
-                                <path
-                                    d="m590.605 38.104c-11.431 0-19.052 7.621-19.052 19.052v99.069c-53.345-95.259-156.224-156.225-266.725-156.225-160.035 0-293.397 125.742-304.828 285.777 0 7.621 7.621 19.052 19.052 19.052 11.431 0 19.052-7.621 19.052-19.052 11.431-137.173 125.741-247.673 266.724-247.673 102.88 0 198.138 60.966 240.052 152.414h-106.69c-11.431 0-19.052 7.621-19.052 19.052s7.621 19.052 19.052 19.052h152.414c11.431 0 19.052-7.621 19.052-19.052v-152.415c.001-11.431-7.62-19.051-19.051-19.051z"
-                                    fill="#ffffff"></path>
-                            </g>
-                        </g>
-                    </svg>
-                    <!-- Static number "1" -->
-                    <div class="number">1</div>
-                </div>
-                <!-- Button text -->
-                Download
-            </button>
-            {{else}}
-            <button id="downloadInput" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
-                onclick="location.href='/archive/download/{{.FileCode}}';">
-                Download
-            </button>
-            {{ end }}
 
             {{if not .Exist}}
-            <script>
-                downloadInput = document.getElementById("downloadInput")
-                if (downloadInput != null) {
-                    downloadInput.disabled = true
-                }
-            </script>
-            <h4 class="text-center text-secondary mb-4">File with code '<strong>{{.FileCode}}</strong>' does not
-                exist.</h2>
-
-                {{else}}
+            <h2 class="text-center text-secondary mb-4">File with code '<strong>{{.FileCode}}</strong>' does not
+                exist.
+            </h2>
+            {{else}}
                 <!-- ZIP Name -->
                 <h4 class="text-center text-secondary mb-4">File code: '<strong>{{.FileCode}}</strong>'</h2>
 
@@ -180,7 +143,42 @@
                         <img src="data:image/png;base64,{{.QRcodeBase64}}" alt="QR Code" class="qr-code img-fluid mb-3"
                             onclick="toggleSize(this)">
                     </div>
+
+                    <!-- Download Button -->
+                    {{if .OneTimeDownload}}
+                    <button id="loading-button" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
+                        onclick="location.href='/archive/download/{{.FileCode}}';">
+
+                        <!-- Container for the rotating arrow and static number -->
+                        <div class="svg-container">
+                            <!-- Rotating arrow SVG -->
+                            <svg class="rotating-arrow" width="26" height="26" viewBox="0 0 609.657 609.657"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <g>
+                                    <g id="line_expanded_52_">
+                                        <path
+                                            d="m590.605 304.828c-11.431 0-19.052 7.621-19.052 19.052-7.621 140.983-125.742 247.673-266.725 247.673-102.88 0-198.138-60.966-240.052-152.414h106.69c11.431 0 19.052-7.621 19.052-19.052s-7.621-19.052-19.052-19.052h-152.414c-11.431 0-19.052 7.621-19.052 19.052v152.414c0 11.431 7.621 19.052 19.052 19.052s19.052-7.621 19.052-19.052v-99.069c53.345 95.259 156.225 156.225 266.725 156.225 160.035 0 293.397-125.742 304.828-285.777 0-7.621-7.621-19.052-19.052-19.052z"
+                                            fill="#ffffff"></path>
+                                        <path
+                                            d="m590.605 38.104c-11.431 0-19.052 7.621-19.052 19.052v99.069c-53.345-95.259-156.224-156.225-266.725-156.225-160.035 0-293.397 125.742-304.828 285.777 0 7.621 7.621 19.052 19.052 19.052 11.431 0 19.052-7.621 19.052-19.052 11.431-137.173 125.741-247.673 266.724-247.673 102.88 0 198.138 60.966 240.052 152.414h-106.69c-11.431 0-19.052 7.621-19.052 19.052s7.621 19.052 19.052 19.052h152.414c11.431 0 19.052-7.621 19.052-19.052v-152.415c.001-11.431-7.62-19.051-19.051-19.051z"
+                                            fill="#ffffff"></path>
+                                    </g>
+                                </g>
+                            </svg>
+                            <!-- Static number "1" -->
+                            <div class="number">1</div>
+                        </div>
+                        <!-- Button text -->
+                        Download
+                    </button>
+                    {{else}}
+                    <button id="downloadInput" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
+                        onclick="location.href='/archive/download/{{.FileCode}}';">
+                        Download
+                    </button>
                     {{ end }}
+
+                {{ end }}
         </div>
     </div>
 </div>

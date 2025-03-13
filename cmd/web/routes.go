@@ -2,9 +2,20 @@ package main
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/bmizerany/pat"
 	"github.com/justinas/alice"
+)
+
+// SessionState tracks the state of each session
+type SessionState struct {
+	IsArchiving bool
+}
+
+var (
+	sessionMap = make(map[string]*SessionState) // Maps session_id to SessionState
+	mutex      = &sync.Mutex{}                  // Protects access to sessionMap
 )
 
 func (app *application) routes() http.Handler {

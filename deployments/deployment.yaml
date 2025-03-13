@@ -72,7 +72,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: manual
+  storageClassName: standard
   hostPath:
     path: /mnt/share-my-files
 
@@ -80,7 +80,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: share-my-files
+  name: share-my-files2
   namespace: applications
 spec:
   accessModes:
@@ -88,5 +88,5 @@ spec:
   resources:
     requests:
       storage: 3Gi
-  storageClassName: manual
+  storageClassName: standard
  
