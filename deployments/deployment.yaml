@@ -80,7 +80,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: share-my-files2
+  name: share-my-files
   namespace: applications
 spec:
   accessModes:
