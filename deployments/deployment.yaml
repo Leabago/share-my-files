@@ -18,6 +18,9 @@ spec:
       containers:
       - image: share-my-files
         name: share-my-files
+        volumeMounts:
+          - name: my-storage
+            mountPath: /tmp/share-my-files
         ports:
         - containerPort: 8080
         imagePullPolicy: Never
@@ -29,7 +32,10 @@ spec:
             configMapKeyRef:
               name: app-config
               key: MAX_FILE_SIZE
-
+      volumes:
+        - name: my-storage
+          persistentVolumeClaim:
+            claimName: share-my-files
 ---
 apiVersion: v1
 kind: Service
@@ -53,3 +59,34 @@ metadata:
   namespace: applications
 data:
   MAX_FILE_SIZE: "3145728" # size in bytes
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: share-my-files
+  namespace: applications
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /mnt/share-my-files
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: share-my-files
+  namespace: applications
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+  storageClassName: manual
+ 
