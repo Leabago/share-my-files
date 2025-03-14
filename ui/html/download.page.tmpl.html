@@ -5,13 +5,12 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6 text-center">
-            <h1 class="mb-4">Please write the file code</h1>
+            <h1 class="mb-4" id="writeFileCodeText">Please write the file code</h1>
             <form action="/archive/null" method="get" id="formFindArchive" onsubmit="handleClick()">
                 <div class="input-group mb-3">
-                    <input type='text' name='find' id="archiveId" class="form-control"
-                        placeholder="Enter 6 character file code" pattern=".{6}" title="6 characters required" required
-                        placeholder="Enter file code">
-                    <input type="submit" class="btn btn-primary" value="Find" id="submitArchiveId" />
+                    <input type='text' name='find' id="sessionCodeInput" class="form-control"
+                        placeholder="Enter 6 character file code" pattern=".{6}" title="You need to enter the file code, that is 6 characters" required>
+                    <input type="submit" class="btn btn-primary" value="Find" id="submitSessionCode" />
                 </div>
             </form>
         </div>
@@ -20,13 +19,13 @@
 
 <script>
     function handleClick() {
-        const archiveId = document.getElementById("archiveId").value;
-        document.getElementById("formFindArchive").action = ("/archive/" + archiveId);
+        const sessionCodeInput = document.getElementById("sessionCodeInput").value;
+        document.getElementById("formFindArchive").action = ("/archive/" + sessionCodeInput);
     }
 
     function clickedButton() {
-        const archiveId = document.getElementById("archiveId").value;
-        window.location = "/archive/" + archiveId
+        const sessionCodeInput = document.getElementById("sessionCodeInput").value;
+        window.location = "/archive/" + sessionCodeInput
     }
 
 </script>

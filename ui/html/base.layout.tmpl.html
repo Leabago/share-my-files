@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-  <title>Bootstrap 5 Website Example</title>
+  <title>share my files</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS -->
@@ -13,21 +13,57 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
   <link rel='stylesheet' href='../static/css/main.css' type="text/css">
+
+  <style>
+    .flag-icon {
+      width: 20px;
+      height: auto;
+      margin-right: 5px;
+    }
+
+    .btn-secondary:disabled {
+      opacity: 1;
+      /* Ensure the button doesn't look faded */
+      cursor: not-allowed;
+      /* Change cursor to indicate it's disabled */
+    }
+  </style>
 </head>
 
 <body>
-  <div class="bg-primary container-fluid text-white text-center">
-    <!-- <img src="ShareMyFile.svg" class="img-fluid w-25 p-3" alt="Responsive image"> -->
-    <img src="../static/img/shareMyFileLogo.png" class="img-fluid" width="300" alt="Responsive image">
-  </div>
+  <input type="hidden" id="sessionCode" value={{.SessionCode}}>
+
+  <!-- Header Section -->
+  <header class="bg-info py-3">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <!-- Logo with fixed size -->
+        <div class="logo">
+          <img src="../static/img/shareMyFileLogo.png" alt="Logo" class="w-100 h-auto" style="max-width: 150px;">
+        </div>
+
+        <!-- Language Switcher Buttons -->
+        <div class="language-switcher">
+          <button class="btn btn-outline-secondary me-2" id="enButton" onclick="changeLanguage('en')">
+            <img src="../static/img/en.svg" alt="English" class="flag-icon">
+            English</button>
+          <button class="btn btn-outline-secondary" id="ruButton" onclick="changeLanguage('ru')">
+            <img src="../static/img/ru.svg" alt="Russian" class="flag-icon">
+            Русский
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
   <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
     <div class="container-fluid justify-content-center">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link" href="/upload">Upload</a>
+          <a class="nav-link" href="/upload" id="uploadText">Upload</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/download">Download</a>
+          <a class="nav-link" href="/download" id="downloadText">Download</a>
         </li>
       </ul>
     </div>
@@ -37,6 +73,239 @@
   </main>
   {{template "footer" .}}
 </body>
+
+<script>
+
+  // Translations
+  const translations = {
+    en: {
+      uploadText: "Upload",
+      downloadText: "Download",
+      fileUploadText: "File Upload",
+      dragAndDropText: "Drag and drop files here or click to select files",
+      selectedFilesText: "Selected files:",
+      lifeTimeText: "How long to keep files?",
+      storageDuration1Text: "One time download",
+      storageDuration2Text: "6 hours",
+      storageDuration3Text: "1 day",
+      storageDuration4Text: "4 days",
+      submitButton: "Submit Files",
+      writeFileCodeText: "Please write the file code",
+      sessionCodeInputPlaceholder: "Enter 6 character file code",
+      sessionCodeInputTitle: "You need to enter the file code, that is 6 characters",
+      submitSessionCode: "Find",
+      fileCodeLeftText: "File code ",
+      copyLinkText: "Copy",
+      uploadedFilesText: "Uploaded files:",
+      qrCodeHintText: "Scan QR Code to open this page",
+      successModalLabel: "Success!",
+      successModalTextLeft: "Files submitted successfully! You will be redirected in ",
+      successModalTextRight: " seconds.",
+      redirectNowButton: "Redirect Now",
+      closeModalText: "Close",
+    },
+    ru: {
+      uploadText: "Загрузить",
+      downloadText: "Скачать",
+      fileUploadText: "Загрузка файлов",
+      dragAndDropText: "Перетащите файлы сюда или щелкните, чтобы выбрать файлы",
+      selectedFilesText: "Выбранные файлы:",
+      lifeTimeText: "Сколько времени хранить файлы?",
+      storageDuration1Text: "Одноразовая загрузка",
+      storageDuration2Text: "6 часов",
+      storageDuration3Text: "1 день",
+      storageDuration4Text: "4 дня",
+      submitButton: "Отправить файлы",
+      writeFileCodeText: "Пожалуйста, напишите код файла",
+      sessionCodeInputPlaceholder: "Введите 6-значный код файла",
+      sessionCodeInputTitle: "Вам необходимо ввести код файла, то есть 6 символов",
+      submitSessionCode: "Найти",
+      fileCodeLeftText: "Код файла ",
+      copyLinkText: "Копировать",
+      uploadedFilesText: "Загруженные файлы:",
+      qrCodeHintText: "Отсканируйте QR-код, чтобы открыть эту страницу",
+      successModalLabel: "Успех!",
+      successModalTextLeft: "Файлы успешно отправлены! Вы будете перенаправлены в течении ",
+      successModalTextRight: " секунд.",
+      redirectNowButton: "Перейти сейчас",
+      closeModalText: "Закрыть",
+    },
+  };
+
+  //  Retrieve the saved language from localStorage or default to 'en'
+  const savedLanguage = localStorage.getItem('language') || 'en';
+  let currentLanguage = 'en'; // Default language
+
+  // Function to update the button states based on the current language
+  function updateButtonStates() {
+    const enButton = document.getElementById('enButton');
+    const ruButton = document.getElementById('ruButton');
+
+    // Reset both buttons to their default state
+    enButton.classList.remove('btn-secondary');
+    enButton.classList.add('btn-outline-secondary');
+    enButton.disabled = false;
+
+    ruButton.classList.remove('btn-secondary');
+    ruButton.classList.add('btn-outline-secondary');
+    ruButton.disabled = false;
+
+    // Set the active state for the selected language button
+    if (currentLanguage === 'en') {
+      enButton.classList.remove('btn-outline-secondary');
+      enButton.classList.add('btn-secondary');
+      enButton.disabled = true; // Disable the button for the current language
+    } else if (currentLanguage === 'ru') {
+      ruButton.classList.remove('btn-outline-secondary');
+      ruButton.classList.add('btn-secondary');
+      ruButton.disabled = true; // Disable the button for the current language
+    }
+  }
+
+  // Function to change language
+  function changeLanguage(lang) {
+
+    // Prevent switching to the same language
+    if (lang === currentLanguage) {
+      return;
+    }
+
+    currentLanguage = lang;
+    localStorage.setItem('language', lang); // Save to localStorage
+    console.log("change language to: ", lang)
+    updateButtonStates(lang)
+
+    const uploadText = document.getElementById('uploadText');
+    if (uploadText) { uploadText.textContent = translations[lang].uploadText; }
+
+    const downloadText = document.getElementById('downloadText');
+    if (downloadText) {
+      downloadText.textContent = translations[lang].downloadText;
+    }
+
+    const fileUploadText = document.getElementById('fileUploadText');
+    if (fileUploadText) {
+      fileUploadText.textContent = translations[lang].fileUploadText;
+    }
+
+    const dragAndDropText = document.getElementById('dragAndDropText');
+    if (dragAndDropText) {
+      dragAndDropText.textContent = translations[lang].dragAndDropText;
+    }
+
+    const selectedFilesText = document.getElementById('selectedFilesText');
+    if (selectedFilesText) {
+      selectedFilesText.textContent = translations[lang].selectedFilesText;
+    }
+
+    const lifeTimeText = document.getElementById('lifeTimeText');
+    if (lifeTimeText) {
+      lifeTimeText.textContent = translations[lang].lifeTimeText;
+    }
+
+    const storageDuration1Text = document.getElementById('storageDuration1Text');
+    if (storageDuration1Text) {
+      storageDuration1Text.textContent = translations[lang].storageDuration1Text;
+    }
+
+    const storageDuration2Text = document.getElementById('storageDuration2Text');
+    if (storageDuration2Text) {
+      storageDuration2Text.textContent = translations[lang].storageDuration2Text;
+    }
+
+    const storageDuration3Text = document.getElementById('storageDuration3Text');
+    if (storageDuration3Text) {
+      storageDuration3Text.textContent = translations[lang].storageDuration3Text;
+    }
+
+    const storageDuration4Text = document.getElementById('storageDuration4Text');
+    if (storageDuration4Text) {
+      storageDuration4Text.textContent = translations[lang].storageDuration4Text;
+    }
+
+    const submitButton = document.getElementById('submitButton');
+    if (submitButton) {
+      submitButton.textContent = translations[lang].submitButton;
+    }
+
+    const writeFileCodeText = document.getElementById('writeFileCodeText');
+    if (writeFileCodeText) {
+      writeFileCodeText.textContent = translations[lang].writeFileCodeText;
+    }
+
+    const sessionCodeInput = document.getElementById('sessionCodeInput');
+    if (sessionCodeInput) {
+      sessionCodeInput.placeholder = translations[lang].sessionCodeInputPlaceholder;
+      sessionCodeInput.title = translations[lang].sessionCodeInputTitle;
+    }
+
+    const submitSessionCode = document.getElementById('submitSessionCode');
+    if (sessionCodeInput) {
+      submitSessionCode.value = translations[lang].submitSessionCode;
+    }
+
+    const fileCodeLeftText = document.getElementById('fileCodeLeftText');
+    const fileCodeRightText = document.getElementById('fileCodeRightText');
+    if (fileCodeLeftText && fileCodeRightText) {
+      const sessionCode = document.getElementById('sessionCode');
+      fileCodeLeftText.innerHTML = `${translations[lang].fileCodeLeftText} '<strong id="fileCodeRightText">${sessionCode.value}</strong>'`
+    }
+
+    const copyLinkText = document.getElementById('copyLinkText');
+    if (copyLinkText) {
+      copyLinkText.textContent = translations[lang].copyLinkText;
+    }
+
+    const uploadedFilesText = document.getElementById('uploadedFilesText');
+    if (uploadedFilesText) {
+      uploadedFilesText.textContent = translations[lang].uploadedFilesText;
+    }
+
+    const qrCodeHintText = document.getElementById('qrCodeHintText');
+    if (qrCodeHintText) {
+      qrCodeHintText.textContent = translations[lang].qrCodeHintText;
+    }
+
+    const oneLoadButton = document.getElementById('oneLoadButton');
+    if (oneLoadButton) {
+      oneLoadButton.textContent = translations[lang].downloadText;
+    }
+
+    const loadButton = document.getElementById('loadButton');
+    if (loadButton) {
+      loadButton.textContent = translations[lang].downloadText;
+    }
+
+    const successModalLabel = document.getElementById('successModalLabel');
+    if (successModalLabel) {
+      successModalLabel.textContent = translations[lang].successModalLabel;
+    }
+
+    const successModalText = document.getElementById('successModalText');
+    if (successModalText) {
+      successModalText.innerHTML = `${translations[lang].successModalTextLeft}'<span id="countdown">5</span>'${translations[lang].successModalTextRight}`
+    }
+
+
+    const redirectNowButton = document.getElementById('redirectNowButton');
+    if (redirectNowButton) {
+      redirectNowButton.textContent = translations[lang].redirectNowButton;
+    }
+
+    const closeModalText = document.getElementById('closeModalText');
+    if (closeModalText) {
+      closeModalText.textContent = translations[lang].closeModalText;
+    }
+
+  }
+
+  // Initialize the button states when the page loads
+  document.addEventListener('DOMContentLoaded', () => {
+    changeLanguage(savedLanguage);
+    updateButtonStates(savedLanguage);
+  });
+
+</script>
 
 </html>
 {{end}}

@@ -53,8 +53,7 @@
   }
 </style>
 
-<input type="hidden" id="sessionCode" value={{.SessionCode}}>
-
+ 
 <!-- scripts with -->
 <script src="../static/js/max-file-size.js" type="text/javascript"></script>
 
@@ -88,12 +87,12 @@
 </script>
 
 <div class="container mt-5">
-  <h1 class="text-center mb-4">File Upload</h1>
+  <h1 class="text-center mb-4" id="fileUploadText">Uploading files</h1>
   <div class="card shadow">
     <div class="card-body">
       <!-- Drag and Drop Zone -->
       <div class="drop-zone rounded" id="dropZone">
-        <p class="text-muted">Drag and drop files here or click to select files.</p>
+        <p class="text-muted" id="dragAndDropText">Drag and drop files here or click to select files</p>
       </div>
       <input type="file" id="fileInput" multiple class="d-none">
 
@@ -105,35 +104,37 @@
 
       <!-- File List -->
       <div class="mt-4">
-        <h5>Selected Files:</h5>
+        <h5 id="selectedFilesText">Selected files:</h5>
         <ul id="fileNames" class="list-group file-list"></ul>
       </div>
 
       <!-- Storage Options -->
       <div class="mt-4">
-        <label class="form-label">Store files for:</label>
+        <label class="form-label">
+          <h5 id="lifeTimeText" >How long to keep files?</h5>
+        </label>
         <div>
           <div class="form-check">
             <input class="form-check-input" type="radio" name="storageDuration" id="storageDuration1" value="1">
-            <label class="form-check-label" for="storageDuration1">One time download</label>
+            <label class="form-check-label" for="storageDuration1" id="storageDuration1Text">One time download</label>
           </div>
           <div class="form-check">
             <input class="form-check-input" type="radio" name="storageDuration" id="storageDuration2" value="2" checked>
-            <label class="form-check-label" for="storageDuration2">6 hours</label>
+            <label class="form-check-label" for="storageDuration2" id="storageDuration2Text">6 hours</label>
           </div>
           <div class="form-check">
             <input class="form-check-input" type="radio" name="storageDuration" id="storageDuration3" value="3">
-            <label class="form-check-label" for="storageDuration3">1 day</label>
+            <label class="form-check-label" for="storageDuration3"  id="storageDuration3Text">1 day</label>
           </div>
           <div class="form-check">
             <input class="form-check-input" type="radio" name="storageDuration" id="storageDuration4" value="4">
-            <label class="form-check-label" for="storageDuration4">4 days</label>
+            <label class="form-check-label" for="storageDuration4"  id="storageDuration4Text">4 days</label>
           </div>
         </div>
       </div>
 
       <!-- Submit Button -->
-      <button id="submitButton" class="btn btn-primary mt-4 w-100">Submit Files</button>
+      <button id="submitButton" class="btn btn-primary mt-4 w-100"  >Submit Files</button>
 
       <!-- Success Modal -->
       <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
@@ -143,12 +144,12 @@
               <h5 class="modal-title" id="successModalLabel">Success!</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" id="successModalText">
               Files submitted successfully! You will be redirected in <span id="countdown">5</span> seconds.
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" id="redirectNowButton">Redirect Now</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModalText">Close</button>
             </div>
           </div>
         </div>

@@ -68,7 +68,8 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	file.FileCode = code
 
 	app.render(w, r, "show.page.tmpl.html", &templateData{
-		File: file,
+		SessionCode: code,
+		File:        file,
 	})
 }
 

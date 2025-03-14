@@ -118,17 +118,17 @@
             </h2>
             {{else}}
                 <!-- ZIP Name -->
-                <h1 class="text-center mb-4">File code '<strong>{{.FileCode}}</strong>'</h2>
+                <h1 class="text-center mb-4" id="fileCodeLeftText">File code '<strong id="fileCodeRightText">{{.FileCode}}</strong>'</h1>
 
                     <!-- File Link with Copy Button -->
                     <div class="input-group mb-4">
                         <input type="text" class="form-control" id="fileLink" value={{.URL}} readonly>
-                        <button class="btn btn-success" onclick="copyLink()">Copy</button>
+                        <button class="btn btn-success" onclick="copyLink()" id="copyLinkText">Copy</button>
                     </div>
 
                     <!-- File List -->
                     <div class="mt-4">
-                        <h5>Uploaded files:</h5>
+                        <h5 id="uploadedFilesText">Uploaded files:</h5>
                         <ul id="fileNames" class="list-group file-list">
                             {{ range .FileNameList }}
                             <li class="list-group-item">{{ . }}</li>
@@ -138,7 +138,7 @@
 
                     <!-- QR Code -->
                     <div class="text-center justify-content-center align-items-center border rounded p-4 bg-light mt-1">
-                        <h5 class="text-secondary mb-1">Scan QR Code to open this page</h5>
+                        <h5 class="text-secondary mb-1" id="qrCodeHintText">Scan QR Code to open this page</h5>
                         <!-- Placeholder for QR Code -->
                         <img src="data:image/png;base64,{{.QRcodeBase64}}" alt="QR Code" class="qr-code img-fluid"
                             onclick="toggleSize(this)">
@@ -146,7 +146,7 @@
 
                     <!-- Download Button -->
                     {{if .OneTimeDownload}}
-                    <button id="loading-button" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
+                    <button id="oneLoadButton" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
                         onclick="location.href='/archive/download/{{.FileCode}}';">
 
                         <!-- Container for the rotating arrow and static number -->
@@ -172,7 +172,7 @@
                         Download
                     </button>
                     {{else}}
-                    <button id="downloadInput" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
+                    <button id="loadButton" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
                         onclick="location.href='/archive/download/{{.FileCode}}';">
                         Download
                     </button>
@@ -245,7 +245,7 @@
 
     // one time download
     // Add an event listener to the button
-    const button = document.getElementById('loading-button');
+    const button = document.getElementById('oneLoadButton');
     const svgContainer = document.querySelector('.svg-container');
 
     if (button != null && svgContainer != null) {
