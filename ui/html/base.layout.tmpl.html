@@ -10,6 +10,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
   <link rel='stylesheet' href='../static/css/main.css' type="text/css">
@@ -28,6 +30,72 @@
       /* Change cursor to indicate it's disabled */
     }
   </style>
+
+<script>
+    // Translations
+    const translations = {
+    en: {
+      uploadText: "Upload",
+      downloadText: "Download",
+      fileUploadText: "File Upload",
+      dragAndDropText: "Drag and drop files here or click to select files",
+      selectedFilesText: "Selected files:",
+      lifeTimeText: "How long to keep files?",
+      storageDuration1Text: "One time download",
+      storageDuration2Text: "6 hours",
+      storageDuration3Text: "1 day",
+      storageDuration4Text: "4 days",
+      submitButton: "Submit Files",
+      writeFileCodeText: "Please write the file code",
+      sessionCodeInputPlaceholder: "Enter 6 character file code",
+      sessionCodeInputTitle: "You need to enter the file code, that is 6 characters",
+      submitSessionCode: "Find",
+      fileCodeLeftText: "File code ",
+      copyLinkText: "Copy",
+      uploadedFilesText: "Uploaded files:",
+      qrCodeHintText: "Scan QR Code to open this page",
+      successModalLabel: "Success!",
+      successModalTextLeft: "Files submitted successfully! You will be redirected in ",
+      successModalTextRight: " seconds.",
+      redirectNowButton: "Redirect Now",
+      closeModalText: "Close",
+      fileNotExistsTextLeft: "File with code ",
+      fileNotExistsTextRight: " does not exist.",
+      fileLinkText: "File link",
+    },
+    ru: {
+      uploadText: "Загрузить",
+      downloadText: "Скачать",
+      fileUploadText: "Загрузка файлов",
+      dragAndDropText: "Перетащите файлы сюда или щелкните, чтобы выбрать файлы",
+      selectedFilesText: "Выбранные файлы:",
+      lifeTimeText: "Сколько времени хранить файлы?",
+      storageDuration1Text: "Одноразовая загрузка",
+      storageDuration2Text: "6 часов",
+      storageDuration3Text: "1 день",
+      storageDuration4Text: "4 дня",
+      submitButton: "Отправить файлы",
+      writeFileCodeText: "Пожалуйста, напишите код файла",
+      sessionCodeInputPlaceholder: "Введите 6-значный код файла",
+      sessionCodeInputTitle: "Вам необходимо ввести код файла, то есть 6 символов",
+      submitSessionCode: "Найти",
+      fileCodeLeftText: "Код файла ",
+      copyLinkText: "Копировать",
+      uploadedFilesText: "Загруженные файлы:",
+      qrCodeHintText: "Отсканируйте QR-код, чтобы открыть эту страницу",
+      successModalLabel: "Успех!",
+      successModalTextLeft: "Файлы успешно отправлены! Вы будете перенаправлены в течении ",
+      successModalTextRight: " секунд.",
+      redirectNowButton: "Перейти сейчас",
+      closeModalText: "Закрыть",
+      fileNotExistsTextLeft: "Файл с кодом ",
+      fileNotExistsTextRight: " не существует",
+      fileLinkText: "Ссылка на файл",
+    },
+  };
+
+</script>
+
 </head>
 
 <body>
@@ -76,62 +144,7 @@
 
 <script>
 
-  // Translations
-  const translations = {
-    en: {
-      uploadText: "Upload",
-      downloadText: "Download",
-      fileUploadText: "File Upload",
-      dragAndDropText: "Drag and drop files here or click to select files",
-      selectedFilesText: "Selected files:",
-      lifeTimeText: "How long to keep files?",
-      storageDuration1Text: "One time download",
-      storageDuration2Text: "6 hours",
-      storageDuration3Text: "1 day",
-      storageDuration4Text: "4 days",
-      submitButton: "Submit Files",
-      writeFileCodeText: "Please write the file code",
-      sessionCodeInputPlaceholder: "Enter 6 character file code",
-      sessionCodeInputTitle: "You need to enter the file code, that is 6 characters",
-      submitSessionCode: "Find",
-      fileCodeLeftText: "File code ",
-      copyLinkText: "Copy",
-      uploadedFilesText: "Uploaded files:",
-      qrCodeHintText: "Scan QR Code to open this page",
-      successModalLabel: "Success!",
-      successModalTextLeft: "Files submitted successfully! You will be redirected in ",
-      successModalTextRight: " seconds.",
-      redirectNowButton: "Redirect Now",
-      closeModalText: "Close",
-    },
-    ru: {
-      uploadText: "Загрузить",
-      downloadText: "Скачать",
-      fileUploadText: "Загрузка файлов",
-      dragAndDropText: "Перетащите файлы сюда или щелкните, чтобы выбрать файлы",
-      selectedFilesText: "Выбранные файлы:",
-      lifeTimeText: "Сколько времени хранить файлы?",
-      storageDuration1Text: "Одноразовая загрузка",
-      storageDuration2Text: "6 часов",
-      storageDuration3Text: "1 день",
-      storageDuration4Text: "4 дня",
-      submitButton: "Отправить файлы",
-      writeFileCodeText: "Пожалуйста, напишите код файла",
-      sessionCodeInputPlaceholder: "Введите 6-значный код файла",
-      sessionCodeInputTitle: "Вам необходимо ввести код файла, то есть 6 символов",
-      submitSessionCode: "Найти",
-      fileCodeLeftText: "Код файла ",
-      copyLinkText: "Копировать",
-      uploadedFilesText: "Загруженные файлы:",
-      qrCodeHintText: "Отсканируйте QR-код, чтобы открыть эту страницу",
-      successModalLabel: "Успех!",
-      successModalTextLeft: "Файлы успешно отправлены! Вы будете перенаправлены в течении ",
-      successModalTextRight: " секунд.",
-      redirectNowButton: "Перейти сейчас",
-      closeModalText: "Закрыть",
-    },
-  };
-
+ 
   //  Retrieve the saved language from localStorage or default to 'en'
   const savedLanguage = localStorage.getItem('language') || 'en';
   let currentLanguage = 'en'; // Default language
@@ -248,7 +261,7 @@
     const fileCodeRightText = document.getElementById('fileCodeRightText');
     if (fileCodeLeftText && fileCodeRightText) {
       const sessionCode = document.getElementById('sessionCode');
-      fileCodeLeftText.innerHTML = `${translations[lang].fileCodeLeftText} '<strong id="fileCodeRightText">${sessionCode.value}</strong>'`
+      fileCodeLeftText.innerHTML = `${translations[lang].fileCodeLeftText}'${fileCodeRightText.outerHTML}'`
     }
 
     const copyLinkText = document.getElementById('copyLinkText');
@@ -267,13 +280,26 @@
     }
 
     const oneLoadButton = document.getElementById('oneLoadButton');
-    if (oneLoadButton) {
-      oneLoadButton.textContent = translations[lang].downloadText;
+    const svgContainer = document.getElementById('svgContainer');
+    // const svgContainer = document.querySelector('.svg-container');
+
+    console.log("oneLoadButton:", oneLoadButton)
+    console.log("svgContainer:", svgContainer)
+    if (oneLoadButton && svgContainer) {
+      console.log("oneLoadButton:")
+      oneLoadButton.innerHTML = `
+      ${svgContainer.outerHTML}
+      ${translations[lang].downloadText}
+      `
     }
 
     const loadButton = document.getElementById('loadButton');
-    if (loadButton) {
-      loadButton.textContent = translations[lang].downloadText;
+    const downloadIcon = document.getElementById('downloadIcon');
+    if (loadButton && downloadIcon) {
+      loadButton.innerHTML = `
+      ${downloadIcon.outerHTML}
+      ${translations[lang].downloadText}
+      `
     }
 
     const successModalLabel = document.getElementById('successModalLabel');
@@ -282,8 +308,9 @@
     }
 
     const successModalText = document.getElementById('successModalText');
-    if (successModalText) {
-      successModalText.innerHTML = `${translations[lang].successModalTextLeft}'<span id="countdown">5</span>'${translations[lang].successModalTextRight}`
+    const countdown = document.getElementById('countdown');     
+    if (successModalText && countdown) {
+      successModalText.innerHTML = `${translations[lang].successModalTextLeft}${countdown.outerHTML}${translations[lang].successModalTextRight}`
     }
 
 
@@ -297,6 +324,22 @@
       closeModalText.textContent = translations[lang].closeModalText;
     }
 
+
+    const fileNotExistsText = document.getElementById('fileNotExistsText');
+    const fileNotExistsCodeText = document.getElementById('fileNotExistsCodeText');
+     
+    if (fileNotExistsText && fileNotExistsCodeText) {
+      fileNotExistsText.innerHTML = `
+      ${translations[lang].fileNotExistsTextLeft}
+      ${fileNotExistsCodeText.outerHTML}
+      ${translations[lang].fileNotExistsTextRight}
+      `
+    }
+
+    const fileLinkText = document.getElementById('fileLinkText');
+    if (fileLinkText) {
+      fileLinkText.textContent = translations[lang].fileLinkText;
+    }
   }
 
   // Initialize the button states when the page loads

@@ -20,7 +20,14 @@
 
     .qr-code.large {
         transform: scale(3);
+        z-index: 2;
+        /* Higher z-index (appears on top) */
     }
+
+    /* #loadButton:disabled {
+      opacity: 1;    
+      cursor: not-allowed; 
+    } */
 
     /* Define the rotation animation */
     @keyframes rotate {
@@ -107,78 +114,87 @@
     }
 </style>
 
+<script>
+    const sessionCode = document.getElementById('sessionCode').value;
+</script>
+
 {{with .File}}
 <div class="container mt-5">
     <div class="card shadow-lg">
         <div class="card-body">
 
             {{if not .Exist}}
-            <h2 class="text-center text-secondary mb-4">File with code '<strong>{{.FileCode}}</strong>' does not
+            <h2 class="text-center text-secondary mb-4" id="fileNotExistsText">File with code '<strong
+                    id="fileNotExistsCodeText">{{.FileCode}}</strong>' does not
                 exist.
             </h2>
             {{else}}
-                <!-- ZIP Name -->
-                <h1 class="text-center mb-4" id="fileCodeLeftText">File code '<strong id="fileCodeRightText">{{.FileCode}}</strong>'</h1>
+            <!-- ZIP Name -->
+            <h1 class="text-center mb-4" id="fileCodeLeftText">File code '<strong
+                    id="fileCodeRightText">{{.FileCode}}</strong>'</h1>
 
-                    <!-- File Link with Copy Button -->
-                    <div class="input-group mb-4">
-                        <input type="text" class="form-control" id="fileLink" value={{.URL}} readonly>
-                        <button class="btn btn-success" onclick="copyLink()" id="copyLinkText">Copy</button>
-                    </div>
+            <!-- File Link with Copy Button -->
+            <div class="mt-4">
+                <h5 id="fileLinkText">File link</h5>
+                <div class="input-group mb-4">
+                    <input type="text" class="form-control" id="fileLink" value={{.URL}} readonly>
+                    <button class="btn btn-success" onclick="copyLink()" id="copyLinkText">Copy</button>
+                </div>
+            </div>
 
-                    <!-- File List -->
-                    <div class="mt-4">
-                        <h5 id="uploadedFilesText">Uploaded files:</h5>
-                        <ul id="fileNames" class="list-group file-list">
-                            {{ range .FileNameList }}
-                            <li class="list-group-item">{{ . }}</li>
-                            {{ end }}
-                        </ul>
-                    </div>
-
-                    <!-- QR Code -->
-                    <div class="text-center justify-content-center align-items-center border rounded p-4 bg-light mt-1">
-                        <h5 class="text-secondary mb-1" id="qrCodeHintText">Scan QR Code to open this page</h5>
-                        <!-- Placeholder for QR Code -->
-                        <img src="data:image/png;base64,{{.QRcodeBase64}}" alt="QR Code" class="qr-code img-fluid"
-                            onclick="toggleSize(this)">
-                    </div>
-
-                    <!-- Download Button -->
-                    {{if .OneTimeDownload}}
-                    <button id="oneLoadButton" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
-                        onclick="location.href='/archive/download/{{.FileCode}}';">
-
-                        <!-- Container for the rotating arrow and static number -->
-                        <div class="svg-container">
-                            <!-- Rotating arrow SVG -->
-                            <svg class="rotating-arrow" width="26" height="26" viewBox="0 0 609.657 609.657"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <g>
-                                    <g id="line_expanded_52_">
-                                        <path
-                                            d="m590.605 304.828c-11.431 0-19.052 7.621-19.052 19.052-7.621 140.983-125.742 247.673-266.725 247.673-102.88 0-198.138-60.966-240.052-152.414h106.69c11.431 0 19.052-7.621 19.052-19.052s-7.621-19.052-19.052-19.052h-152.414c-11.431 0-19.052 7.621-19.052 19.052v152.414c0 11.431 7.621 19.052 19.052 19.052s19.052-7.621 19.052-19.052v-99.069c53.345 95.259 156.225 156.225 266.725 156.225 160.035 0 293.397-125.742 304.828-285.777 0-7.621-7.621-19.052-19.052-19.052z"
-                                            fill="#ffffff"></path>
-                                        <path
-                                            d="m590.605 38.104c-11.431 0-19.052 7.621-19.052 19.052v99.069c-53.345-95.259-156.224-156.225-266.725-156.225-160.035 0-293.397 125.742-304.828 285.777 0 7.621 7.621 19.052 19.052 19.052 11.431 0 19.052-7.621 19.052-19.052 11.431-137.173 125.741-247.673 266.724-247.673 102.88 0 198.138 60.966 240.052 152.414h-106.69c-11.431 0-19.052 7.621-19.052 19.052s7.621 19.052 19.052 19.052h152.414c11.431 0 19.052-7.621 19.052-19.052v-152.415c.001-11.431-7.62-19.051-19.051-19.051z"
-                                            fill="#ffffff"></path>
-                                    </g>
-                                </g>
-                            </svg>
-                            <!-- Static number "1" -->
-                            <div class="number">1</div>
-                        </div>
-                        <!-- Button text -->
-                        Download
-                    </button>
-                    {{else}}
-                    <button id="loadButton" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
-                        onclick="location.href='/archive/download/{{.FileCode}}';">
-                        Download
-                    </button>
+            <!-- File List -->
+            <div class="mt-4">
+                <h5 id="uploadedFilesText">Uploaded files:</h5>
+                <ul id="fileNames" class="list-group file-list">
+                    {{ range .FileNameList }}
+                    <li class="list-group-item">{{ . }}</li>
                     {{ end }}
+                </ul>
+            </div>
 
-                {{ end }}
+            <!-- QR Code -->
+            <div class="text-center justify-content-center align-items-center border rounded p-4 bg-light mt-1">
+                <h5 class="text-secondary mb-1" id="qrCodeHintText">Scan QR Code to open this page</h5>
+                <!-- Placeholder for QR Code -->
+                <img src="data:image/png;base64,{{.QRcodeBase64}}" alt="QR Code" class="qr-code img-fluid"
+                    onclick="toggleSize(this)">
+            </div>
+
+            <!-- Download Button -->
+            {{if .OneTimeDownload}}
+            <button id="oneLoadButton" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
+                onclick="location.href='/archive/download/{{.FileCode}}';">
+
+                <!-- Container for the rotating arrow and static number -->
+                <div class="svg-container" id="svgContainer">
+                    <!-- Rotating arrow SVG -->
+                    <svg class="rotating-arrow" width="26" height="26" viewBox="0 0 609.657 609.657"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <g>
+                            <g id="line_expanded_52_">
+                                <path
+                                    d="m590.605 304.828c-11.431 0-19.052 7.621-19.052 19.052-7.621 140.983-125.742 247.673-266.725 247.673-102.88 0-198.138-60.966-240.052-152.414h106.69c11.431 0 19.052-7.621 19.052-19.052s-7.621-19.052-19.052-19.052h-152.414c-11.431 0-19.052 7.621-19.052 19.052v152.414c0 11.431 7.621 19.052 19.052 19.052s19.052-7.621 19.052-19.052v-99.069c53.345 95.259 156.225 156.225 266.725 156.225 160.035 0 293.397-125.742 304.828-285.777 0-7.621-7.621-19.052-19.052-19.052z"
+                                    fill="#ffffff"></path>
+                                <path
+                                    d="m590.605 38.104c-11.431 0-19.052 7.621-19.052 19.052v99.069c-53.345-95.259-156.224-156.225-266.725-156.225-160.035 0-293.397 125.742-304.828 285.777 0 7.621 7.621 19.052 19.052 19.052 11.431 0 19.052-7.621 19.052-19.052 11.431-137.173 125.741-247.673 266.724-247.673 102.88 0 198.138 60.966 240.052 152.414h-106.69c-11.431 0-19.052 7.621-19.052 19.052s7.621 19.052 19.052 19.052h152.414c11.431 0 19.052-7.621 19.052-19.052v-152.415c.001-11.431-7.62-19.051-19.051-19.051z"
+                                    fill="#ffffff"></path>
+                            </g>
+                        </g>
+                    </svg>
+                    <!-- Static number "1" -->
+                    <div class="number">1</div>
+                </div>
+                <!-- Button text -->
+                Download
+            </button>
+            {{else}}
+            <button id="loadButton" class="btn btn-primary btn-lg w-100 mb-4 p-4 custom-btn"
+                onclick="handleDownload('{{.FileCode}}')">
+                <i class="fas fa-download me-2" id="downloadIcon"></i>Download
+            </button>
+            {{ end }}
+
+            {{ end }}
         </div>
     </div>
 </div>
@@ -243,20 +259,68 @@
         image.classList.toggle('large');
     }
 
-    // one time download
-    // Add an event listener to the button
-    const button = document.getElementById('oneLoadButton');
-    const svgContainer = document.querySelector('.svg-container');
+    // Initialize the button states when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        // one time download
+        // Add an event listener to the button
+        const button = document.getElementById('oneLoadButton');
+        const svgContainer = document.querySelector('.svg-container');
 
-    if (button != null && svgContainer != null) {
-        button.addEventListener('click', () => {
-            // Add the "animate" class to trigger the jump, roll, and move animation
-            svgContainer.classList.add('animate');
-            svgContainer.classList.add('hidden');
+        if (button != null && svgContainer != null) {
+            button.addEventListener('click', () => {
+                // Add the "animate" class to trigger the jump, roll, and move animation
+                svgContainer.classList.add('animate');
+                svgContainer.classList.add('hidden');
 
-            // Optional: Disable the button after clicking
-            button.disabled = true;
-        });
+                // Optional: Disable the button after clicking
+                button.disabled = true;
+            });
+        }
+    });
+
+    const button = document.getElementById('loadButton');
+    const cooldownTime = 30; // Cooldown time in seconds
+
+    // Check localStorage for existing cooldown state
+    const lastDownloadTime = localStorage.getItem('lastDownloadTime');
+    const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+
+    if (lastDownloadTime && (currentTime - lastDownloadTime < cooldownTime)) {
+        // Cooldown is still active
+        disableButton(cooldownTime - (currentTime - lastDownloadTime));
+    }
+
+    function handleDownload(sessionCode) {
+        // Trigger the download (replace with your actual download logic)
+        console.log('Download started...');
+        window.location.href = '/archive/download/' + sessionCode;
+
+        // Disable the button and start the cooldown
+        disableButton(cooldownTime);
+
+        // Save the current time to localStorage
+        localStorage.setItem('lastDownloadTime', Math.floor(Date.now() / 1000));
+    }
+
+    function disableButton(timeLeft) {
+        const lang = localStorage.getItem('language') || 'en';
+        button.disabled = true;
+        button.innerHTML = `<i class="fas fa-download me-2" id="downloadIcon"></i>${translations[lang].downloadText} (${timeLeft}s)`;
+
+        // Update the countdown every second
+        const timerInterval = setInterval(() => {
+            const lang = localStorage.getItem('language') || 'en';
+            timeLeft--;
+            button.innerHTML = `<i class="fas fa-download me-2" id="downloadIcon"></i>${translations[lang].downloadText} (${timeLeft}s)`;
+
+            // Re-enable the button after the cooldown
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                button.disabled = false;
+                button.innerHTML = `<i class="fas fa-download me-2" id="downloadIcon"></i>${translations[lang].downloadText}`;
+                localStorage.removeItem('lastDownloadTime'); // Clear the cooldown state
+            }
+        }, 1000); // Update every second
     }
 
 </script>
