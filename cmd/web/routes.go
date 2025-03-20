@@ -49,5 +49,8 @@ func (app *application) routes() http.Handler {
 	fileServerSSL := http.FileServer(http.Dir("./ssl"))
 	mux.Get("/.well-known/pki-validation/", http.StripPrefix("/.well-known/pki-validation/", fileServerSSL))
 
+	// ping
+	mux.Get("/kek", http.HandlerFunc(kek))
+
 	return standardMiddleware.Then(mux)
 }
