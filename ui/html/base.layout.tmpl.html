@@ -29,6 +29,7 @@
       cursor: not-allowed;
       /* Change cursor to indicate it's disabled */
     }
+    
   </style>
 
 <script>
@@ -110,16 +111,17 @@
           <img src="../static/img/shareMyFileLogo.png" alt="Logo" class="w-100 h-auto" style="max-width: 150px;">
         </div>
 
-        <!-- Language Switcher Buttons -->
-        <div class="language-switcher">
-          <button class="btn btn-outline-secondary me-2" id="enButton" onclick="changeLanguage('en')">
-            <img src="../static/img/en.svg" alt="English" class="flag-icon">
-            English</button>
-          <button class="btn btn-outline-secondary" id="ruButton" onclick="changeLanguage('ru')">
-            <img src="../static/img/ru.svg" alt="Russian" class="flag-icon">
-            Русский
+        <div class="language-switcher d-flex flex-column flex-md-row justify-content-end">
+          <button class="btn btn-outline-secondary me-md-2 mb-2 mb-md-0" id="enButton" onclick="changeLanguage('en')">
+              <img src="../static/img/en.svg" alt="English" class="flag-icon">
+              English
           </button>
-        </div>
+          <button class="btn btn-outline-secondary" id="ruButton" onclick="changeLanguage('ru')">
+              <img src="../static/img/ru.svg" alt="Russian" class="flag-icon">
+              Русский
+          </button>
+      </div>
+      
       </div>
     </div>
   </header>
