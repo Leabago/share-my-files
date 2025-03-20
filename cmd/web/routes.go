@@ -45,5 +45,9 @@ func (app *application) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	mux.Get("/static/", http.StripPrefix("/static/", fileServer))
 
+	// https
+	fileServerSSL := http.FileServer(http.Dir("./ssl"))
+	mux.Get("/.well-known/pki-validation/", http.StripPrefix("/.well-known/pki-validation/", fileServerSSL))
+
 	return standardMiddleware.Then(mux)
 }
