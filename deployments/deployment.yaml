@@ -64,7 +64,7 @@ metadata:
   namespace: applications
 data:
   MAX_FILE_SIZE: "3145728" # size in bytes
-  APP_PORT: ":443" # ssh port
+  APP_PORT: ":8080" # ssh port
 
 ---
 apiVersion: v1
