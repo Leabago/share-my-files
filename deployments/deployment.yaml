@@ -37,6 +37,11 @@ spec:
             configMapKeyRef:
               name: app-config
               key: APP_PORT
+        - name: ALLOWED_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: ALLOWED_HOST
       volumes:
         - name: my-storage
           persistentVolumeClaim:
@@ -65,7 +70,7 @@ metadata:
 data:
   MAX_FILE_SIZE: "3145728" # size in bytes
   APP_PORT: ":8080" # ssh port
-
+  ALLOWED_HOST: "sharemyfiles.duckdns.org"
 ---
 apiVersion: v1
 kind: PersistentVolume

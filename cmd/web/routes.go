@@ -19,7 +19,7 @@ var (
 )
 
 func (app *application) routes() http.Handler {
-	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, app.secureHeaders)
+	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, app.secureHeaders, app.noSurf, app.dnsValidation)
 	dynamicMiddleware := alice.New()
 
 	mux := pat.New()
@@ -48,9 +48,6 @@ func (app *application) routes() http.Handler {
 	// https
 	fileServerSSL := http.FileServer(http.Dir("./ssl"))
 	mux.Get("/.well-known/pki-validation/", http.StripPrefix("/.well-known/pki-validation/", fileServerSSL))
-
-	// // ping
-	// mux.Get("/.well-known/pki-validation/647D1E52D917C6217B83F58A26CB3156.txt", http.HandlerFunc(kek))
 
 	return standardMiddleware.Then(mux)
 }
