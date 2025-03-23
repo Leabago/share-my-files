@@ -46,11 +46,11 @@ func (app *application) routes() http.Handler {
 	mux.Get("/static/", http.StripPrefix("/static/", fileServer))
 
 	// https
-	// fileServerSSL := http.FileServer(http.Dir("./ssl"))
-	// mux.Get("/.well-known/pki-validation/", http.StripPrefix("/.well-known/pki-validation/", fileServerSSL))
+	fileServerSSL := http.FileServer(http.Dir("./ssl"))
+	mux.Get("/.well-known/pki-validation/", http.StripPrefix("/.well-known/pki-validation/", fileServerSSL))
 
-	// ping
-	mux.Get("/.well-known/pki-validation/647D1E52D917C6217B83F58A26CB3156.txt", http.HandlerFunc(kek))
+	// // ping
+	// mux.Get("/.well-known/pki-validation/647D1E52D917C6217B83F58A26CB3156.txt", http.HandlerFunc(kek))
 
 	return standardMiddleware.Then(mux)
 }
