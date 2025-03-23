@@ -258,7 +258,3 @@ func (app *application) getUserCode(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte(fileCode))
 }
-
-func kek(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("A62EDA250DFB7021068F402EB57C6E9A94355517DE3B3A84A2D7CF6B7F4753C0\ncomodoca.com\nf6d9d1c0130ee0a"))
-}
