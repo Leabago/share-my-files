@@ -45,3 +45,18 @@ func (app *application) noSurf(next http.Handler) http.Handler {
 	})
 	return csrfHandler
 }
+
+func (app *application) dnsValidation(next http.Handler) http.Handler {
+	allowedHost := getEnv("ALLOWED_HOST", app.logger)
+
+	// Middleware to enforce hostname
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check if the Host header matches the allowed hostname
+		if r.Host != allowedHost {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+
+}

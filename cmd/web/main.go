@@ -50,8 +50,15 @@ func main() {
 		errorLog: errorLog,
 	}
 
-	// connect to redis
+	// get enviroment variables
+	// get redist address
 	redisAddr := getEnv("REDIS_ADDR", logger)
+	// get variable defining maximum file size
+	maxFileSize := getEnv("MAX_FILE_SIZE", logger)
+	// port for aplication
+	appPort := getEnv("APP_PORT", logger)
+
+	// connect to redis
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     redisAddr,
 		Password: "",
@@ -65,8 +72,8 @@ func main() {
 	createFolderForFiles(folderPath, logger)
 
 	// create file with maxFileSize for javascript
-	writeVariable("var MAX_FILE_SIZE = "+getEnv("MAX_FILE_SIZE", logger)+";", maxFileSizeFileName, logger)
-	maxFileSizeInt64, err := strconv.ParseInt(getEnv("MAX_FILE_SIZE", logger), 10, 64)
+	writeVariable("var MAX_FILE_SIZE = "+maxFileSize+";", maxFileSizeFileName, logger)
+	maxFileSizeInt64, err := strconv.ParseInt(maxFileSize, 10, 64)
 	if err != nil {
 		logger.errorLog.Fatal(err)
 	}
@@ -89,16 +96,15 @@ func main() {
 
 	srv := &http.Server{
 		Handler: app.routes(),
-		Addr:    APP_PORT,
+		Addr:    appPort,
 		// Good practice: enforce timeouts for servers you create!
 		IdleTimeout:  time.Minute,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
-	infoLog.Printf("Starting server on %s", APP_PORT)
+	infoLog.Printf("Starting server on %s", appPort)
 
-	err = srv.ListenAndServe()
-	// err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+	err = srv.ListenAndServeTLS("./tls/certificate.crt", "./tls/private.key")
 	errorLog.Fatal(err)
 }

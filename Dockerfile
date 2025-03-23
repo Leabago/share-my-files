@@ -26,6 +26,7 @@ COPY ui /root/ui
 
 # Copy the TLS certificate
 COPY tls /root/tls
+COPY ssl /root/ssl
 
 # Copy the built binary from the builder stage
 COPY --from=builder /app/app .

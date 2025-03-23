@@ -5,9 +5,6 @@ import (
 	"time"
 )
 
-// port for aplication
-const APP_PORT = ":8080"
-
 // folderPath folder with user files
 const folderPath = "/tmp/share-my-files/"
 
