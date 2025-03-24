@@ -45,6 +45,15 @@ spec:
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           {{- with .Values.livenessProbe }}
+          env:
+            - name: REDIS_ADDR
+              value: {{ .Values.env.REDIS_ADDR | quote }}
+            - name: MAX_FILE_SIZE
+              value: {{ .Values.env.MAX_FILE_SIZE | quote }}
+            - name: APP_PORT
+              value: {{ .Values.env.APP_PORT | quote }}
+            - name: ALLOWED_HOST
+              value: {{ .Values.env.ALLOWED_HOST | quote }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
