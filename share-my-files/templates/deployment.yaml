@@ -49,22 +49,22 @@ spec:
           - name: REDIS_ADDR
             valueFrom:
               configMapKeyRef:
-                name: {{ include "share-my-files.fullname" . }}
+                name: {{ .Release.Name }}-config-map
                 key: REDIS_ADDR
           - name: MAX_FILE_SIZE
             valueFrom:
               configMapKeyRef:
-                name: {{ include "share-my-files.fullname" . }}
+                name: {{ .Release.Name }}-config-map
                 key: MAX_FILE_SIZE
           - name: APP_PORT
             valueFrom:
               configMapKeyRef:
-                name: {{ include "share-my-files.fullname" . }}
+                name: {{ .Release.Name }}-config-map
                 key: APP_PORT
           - name: ALLOWED_HOST
             valueFrom:
               configMapKeyRef:
-                name: {{ include "share-my-files.fullname" . }}
+                name: {{ .Release.Name }}-config-map
                 key: ALLOWED_HOST
           livenessProbe:
             {{- toYaml . | nindent 12 }}
