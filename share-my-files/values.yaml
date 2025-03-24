@@ -126,12 +126,12 @@ affinity: {}
 
 # env variables
 env:          
- - name: "REDIS_ADDR"
+ - name: REDIS_ADDR
    value: "redis.auxiliary.svc.cluster.local:6379"
- - name: "MAX_FILE_SIZE"
+ - name: MAX_FILE_SIZE
    value: "3145728"
- - name: "APP_PORT"
+ - name: APP_PORT
    value: ":8080"
- - name: "ALLOWED_HOST"
+ - name: ALLOWED_HOST
    value: "sharemyfiles.duckdns.org"
  
