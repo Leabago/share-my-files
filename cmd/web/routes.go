@@ -19,7 +19,7 @@ var (
 )
 
 func (app *application) routes() http.Handler {
-	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, app.secureHeaders)
+	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, app.secureHeaders, app.dnsValidation)
 	dynamicMiddleware := alice.New()
 
 	mux := pat.New()
