@@ -42,7 +42,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:          
           {{ range $name, $value := .Values.env }}
-            - name: {{ $name }}
+            - name: {{ '$name' }}
               value: {{ $value }}
           {{- end }}
           ports:
