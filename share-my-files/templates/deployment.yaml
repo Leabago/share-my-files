@@ -46,14 +46,26 @@ spec:
               protocol: TCP
           {{- with .Values.livenessProbe }}
           env:
-            - name: REDIS_ADDR
-              value: {{ .Values.env.REDIS_ADDR | quote }}
-            - name: MAX_FILE_SIZE
-              value: {{ .Values.env.MAX_FILE_SIZE | quote }}
-            - name: APP_PORT
-              value: {{ .Values.env.APP_PORT | quote }}
-            - name: ALLOWED_HOST
-              value: {{ .Values.env.ALLOWED_HOST | quote }}
+          - name: REDIS_ADDR
+            valueFrom:
+              configMapKeyRef:
+                name: {{ include "share-my-files.fullname" . }}
+                key: REDIS_ADDR
+          - name: MAX_FILE_SIZE
+            valueFrom:
+              configMapKeyRef:
+                name: {{ include "share-my-files.fullname" . }}
+                key: MAX_FILE_SIZE
+          - name: APP_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: {{ include "share-my-files.fullname" . }}
+                key: APP_PORT
+          - name: ALLOWED_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: {{ include "share-my-files.fullname" . }}
+                key: ALLOWED_HOST
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}

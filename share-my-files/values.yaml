@@ -124,8 +124,8 @@ tolerations: []
 affinity: {}
 
 
-env:
-  REDIS_ADDR: "redis.auxiliary.svc.cluster.local:6379"
-  MAX_FILE_SIZE: "3145728"
-  APP_PORT: ":8080"
-  ALLOWED_HOST: "sharemyfiles.duckdns.org"
+# env variables
+REDIS_ADDR: "redis.auxiliary.svc.cluster.local:6379"
+MAX_FILE_SIZE: "3145728"
+APP_PORT: ":8080"
+ALLOWED_HOST: "sharemyfiles.duckdns.org"

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "share-my-files.fullname" . }}
+data:
+  REDIS_ADDR: {{ .Values.REDIS_ADDR | b64enc }}
+  MAX_FILE_SIZE: {{ .Values.MAX_FILE_SIZE | b64enc }}
+  APP_PORT: {{ .Values.APP_PORT | b64enc }}
+  ALLOWED_HOST: {{ .Values.ALLOWED_HOST | b64enc }}
