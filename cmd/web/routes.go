@@ -42,6 +42,9 @@ func (app *application) routes() http.Handler {
 	mux.Get("/healthz", dynamicMiddleware.ThenFunc(app.healthzHandler))
 	mux.Get("/readyz", dynamicMiddleware.ThenFunc(app.readyzHandler))
 
+	// HTTP Liveness and Readiness Probes
+	mux.Get("/health", dynamicMiddleware.ThenFunc(app.healthzHandler))
+
 	// ping
 	mux.Get("/ping", http.HandlerFunc(ping))
 

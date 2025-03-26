@@ -42,7 +42,7 @@ type AppLogger struct {
 }
 
 func main() {
-	fmt.Println("start share-my-files! defects")
+	fmt.Println("start share-my-files! helm 1")
 
 	// create logger
 	logFormat := log.Ldate | log.Ltime | log.Lshortfile

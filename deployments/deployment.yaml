@@ -44,16 +44,24 @@ spec:
               key: ALLOWED_HOST
         livenessProbe:
           httpGet:
+            host: "sharemyfiles.duckdns.org"
             path: /healthz
-            port: 8080
+            port: 443
+            httpHeaders:
+            - name: Host
+              value: "sharemyfiles.duckdns.org"
           initialDelaySeconds: 5
           periodSeconds: 10
           timeoutSeconds: 2
           failureThreshold: 3
         readinessProbe:
           httpGet:
+            host: "sharemyfiles.duckdns.org"
             path: /readyz
-            port: 8080
+            port: 443
+            httpHeaders:
+            - name: Host
+              value: "sharemyfiles.duckdns.org"
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 2
