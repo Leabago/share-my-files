@@ -52,9 +52,7 @@ spec:
             host: "sharemyfiles.duckdns.org"
             path: /healthz
             port: 443
-            httpHeaders:
-            - name: Host
-              value: "sharemyfiles.duckdns.org"
+            scheme: HTTPS
           initialDelaySeconds: 5
           periodSeconds: 10
           timeoutSeconds: 2
@@ -64,9 +62,7 @@ spec:
             host: "sharemyfiles.duckdns.org"
             path: /readyz
             port: 443
-            httpHeaders:
-            - name: Host
-              value: "sharemyfiles.duckdns.org"
+            scheme: HTTPS
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 2

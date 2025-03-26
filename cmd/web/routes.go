@@ -37,8 +37,6 @@ func (app *application) routes() (http.Handler, error) {
 		dynamicMiddleware = alice.New()
 	}
 
-	mux.Get("/kek", dynamicMiddleware.ThenFunc(app.healthzHandler))
-
 	mux.Get("/", dynamicMiddleware.ThenFunc(app.redirectHome))
 	mux.Get("/upload", dynamicMiddleware.ThenFunc(app.createSnippetForm))
 	mux.Post("/upload", dynamicMiddleware.ThenFunc(app.homeGetFiles))
@@ -57,9 +55,6 @@ func (app *application) routes() (http.Handler, error) {
 	// HTTP Liveness and Readiness Probes
 	mux.Get("/healthz", dynamicMiddleware.ThenFunc(app.healthzHandler))
 	mux.Get("/readyz", dynamicMiddleware.ThenFunc(app.readyzHandler))
-
-	// HTTP Liveness and Readiness Probes
-	mux.Get("/health", dynamicMiddleware.ThenFunc(app.healthzHandler))
 
 	// ping
 	mux.Get("/ping", http.HandlerFunc(ping))

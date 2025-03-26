@@ -90,19 +90,23 @@ resources: {}
 livenessProbe:
   httpGet:
     path: /healthz
-    port: 8080
-  initialDelaySeconds: 5
+    port: 443
+    scheme: HTTPS
+    host: "sharemyfiles.duckdns.org"
+  initialDelaySeconds: 30
   periodSeconds: 10
-  timeoutSeconds: 2
+  timeoutSeconds: 5
   failureThreshold: 3
 readinessProbe:
   httpGet:
     path: /readyz
-    port: 8080
+    port: 443
+    scheme: HTTPS
+    host: "sharemyfiles.duckdns.org"
   initialDelaySeconds: 5
   periodSeconds: 5
-  timeoutSeconds: 2
-  failureThreshold: 3
+  timeoutSeconds: 3
+
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
