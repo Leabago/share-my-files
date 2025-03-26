@@ -1,13 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"share-my-files/pkg/models"
 	"share-my-files/pkg/models/operation"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -27,6 +31,8 @@ type application struct {
 	templateCache map[string]*template.Template
 
 	maxFileSize int64
+
+	healthCheck *models.HealthCheck
 }
 
 type AppLogger struct {
@@ -78,11 +84,18 @@ func main() {
 		logger.errorLog.Fatal(err)
 	}
 
+	// health check for readiness probe
+	healthCheck := models.NewHealthCheck()
+
+	// Add Redis checker
+	healthCheck.AddChecker("redis", &models.RedisChecker{RedisClient: redisClient})
+
 	app := &application{
 		logger:      logger,
 		files:       &operation.FileModel{},
 		redisClient: redisClient,
 		maxFileSize: maxFileSizeInt64,
+		healthCheck: healthCheck,
 	}
 
 	// delete files every 10 seconds
@@ -105,6 +118,19 @@ func main() {
 
 	infoLog.Printf("Starting server on %s", appPort)
 
-	err = srv.ListenAndServeTLS("./tls/certificate.crt", "./tls/private.key")
-	errorLog.Fatal(err)
+	// Graceful shutdown
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		if err := srv.ListenAndServeTLS("./tls/certificate.crt", "./tls/private.key"); err != nil && err != http.ErrServerClosed {
+			panic(err)
+		}
+	}()
+
+	<-done
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	srv.Shutdown(ctx)
+
 }

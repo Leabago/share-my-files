@@ -38,6 +38,10 @@ func (app *application) routes() http.Handler {
 	// find file by sessionCode
 	mux.Get("/download", dynamicMiddleware.ThenFunc(app.createDownloadForm))
 
+	// HTTP Liveness and Readiness Probes
+	mux.Get("/healthz", dynamicMiddleware.ThenFunc(app.healthzHandler))
+	mux.Get("/readyz", dynamicMiddleware.ThenFunc(app.readyzHandler))
+
 	// ping
 	mux.Get("/ping", http.HandlerFunc(ping))
 
