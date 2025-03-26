@@ -90,25 +90,31 @@ func main() {
 	// Add Redis checker
 	healthCheck.AddChecker("redis", &models.RedisChecker{RedisClient: redisClient})
 
+	//  template cache
+	templateCache, err := newTemplateCache("./ui/html/", logger)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	app := &application{
-		logger:      logger,
-		files:       &operation.FileModel{},
-		redisClient: redisClient,
-		maxFileSize: maxFileSizeInt64,
-		healthCheck: healthCheck,
+		logger:        logger,
+		files:         &operation.FileModel{},
+		redisClient:   redisClient,
+		maxFileSize:   maxFileSizeInt64,
+		healthCheck:   healthCheck,
+		templateCache: templateCache,
 	}
 
 	// delete files every 10 seconds
 	go app.deleteFileEveryNsec(10)
 
-	templateCache, err := app.newTemplateCache("./ui/html/")
+	handler, err := app.routes()
 	if err != nil {
 		errorLog.Fatal(err)
 	}
-	app.templateCache = templateCache
 
 	srv := &http.Server{
-		Handler: app.routes(),
+		Handler: handler,
 		Addr:    appPort,
 		// Good practice: enforce timeouts for servers you create!
 		IdleTimeout:  time.Minute,

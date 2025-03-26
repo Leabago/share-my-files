@@ -142,4 +142,6 @@ env:
    value: ":8080"
  - name: ALLOWED_HOST
    value: "sharemyfiles.duckdns.org"
+ - name: DNS_VALIDATION
+   value: "false"
  

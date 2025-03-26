@@ -14,7 +14,7 @@ type templateData struct {
 	CurrentYear int
 }
 
-func (app *application) newTemplateCache(dir string) (map[string]*template.Template, error) {
+func newTemplateCache(dir string, logger *AppLogger) (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
 	pages, err := filepath.Glob(filepath.Join(dir, "*page.tmpl.html"))
@@ -25,7 +25,7 @@ func (app *application) newTemplateCache(dir string) (map[string]*template.Templ
 
 	for _, page := range pages {
 		name := filepath.Base(page)
-		app.logger.infoLog.Println("name:", name)
+		logger.infoLog.Println("name:", name)
 
 		ts, err := template.New(name).ParseFiles(page)
 		if err != nil {
@@ -45,7 +45,7 @@ func (app *application) newTemplateCache(dir string) (map[string]*template.Templ
 		cache[name] = ts
 	}
 
-	app.logger.infoLog.Println("cache:", cache)
+	logger.infoLog.Println("cache:", cache)
 
 	return cache, nil
 }

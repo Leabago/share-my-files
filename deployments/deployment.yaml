@@ -95,6 +95,7 @@ data:
   MAX_FILE_SIZE: "3145728" # size in bytes
   APP_PORT: ":8080" # ssh port
   ALLOWED_HOST: "sharemyfiles.duckdns.org"
+  DNS_VALIDATION: "false"
 ---
 apiVersion: v1
 kind: PersistentVolume
