@@ -270,6 +270,7 @@ func (app *application) readyzHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	} else {
+		app.logger.infoLog.Printf("ready check error: %s", errors)
 		w.WriteHeader(http.StatusServiceUnavailable)
 		json.NewEncoder(w).Encode(errors)
 	}
