@@ -42,6 +42,11 @@ spec:
             configMapKeyRef:
               name: app-config
               key: ALLOWED_HOST
+        - name: DNS_VALIDATION
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DNS_VALIDATION               
         livenessProbe:
           httpGet:
             host: "sharemyfiles.duckdns.org"
