@@ -49,21 +49,19 @@ spec:
               key: DNS_VALIDATION               
         livenessProbe:
           httpGet:
-            host: "sharemyfiles.duckdns.org"
             path: /healthz
-            port: 443
+            port: 8080
             scheme: HTTPS
-          initialDelaySeconds: 5
+          initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 2
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            host: "sharemyfiles.duckdns.org"
             path: /readyz
-            port: 443
+            port: 8080
             scheme: HTTPS
-          initialDelaySeconds: 5
+          initialDelaySeconds: 30
           periodSeconds: 5
           timeoutSeconds: 2
           failureThreshold: 3
@@ -94,7 +92,7 @@ metadata:
   namespace: applications
 data:
   MAX_FILE_SIZE: "3145728" # size in bytes
-  APP_PORT: ":8080" # 8080 port inner
+  APP_PORT: ":8080" # inner port
   ALLOWED_HOST: "sharemyfiles.duckdns.org"
   DNS_VALIDATION: "false"
 ---
