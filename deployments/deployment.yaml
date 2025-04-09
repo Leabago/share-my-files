@@ -85,7 +85,7 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8080
-
+      nodePort: 32610
 ---
 apiVersion: v1
 kind: ConfigMap
