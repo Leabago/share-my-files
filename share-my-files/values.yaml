@@ -90,20 +90,17 @@ resources: {}
 livenessProbe:
   httpGet:
     path: /healthz
-    port: 443
+    port: 8080
     scheme: HTTPS
-    host: "sharemyfiles.duckdns.org"
   initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 5
-  failureThreshold: 3
 readinessProbe:
   httpGet:
     path: /readyz
-    port: 443
+    port: 8080
     scheme: HTTPS
-    host: "sharemyfiles.duckdns.org"
-  initialDelaySeconds: 5
+  initialDelaySeconds: 30
   periodSeconds: 5
   timeoutSeconds: 3
 
