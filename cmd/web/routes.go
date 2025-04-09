@@ -53,8 +53,8 @@ func (app *application) routes() (http.Handler, error) {
 	mux.Get("/download", dynamicMiddleware.ThenFunc(app.createDownloadForm))
 
 	// HTTP Liveness and Readiness Probes
-	mux.Get("/healthz", dynamicMiddleware.ThenFunc(app.healthzHandler))
-	mux.Get("/readyz", dynamicMiddleware.ThenFunc(app.readyzHandler))
+	mux.Get("/healthz", http.HandlerFunc((app.healthzHandler)))
+	mux.Get("/readyz", http.HandlerFunc(app.readyzHandler))
 
 	// ping
 	mux.Get("/ping", http.HandlerFunc(ping))
