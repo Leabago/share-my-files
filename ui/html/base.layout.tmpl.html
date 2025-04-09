@@ -32,10 +32,19 @@
     
   </style>
 
+<script src="../static/js/max-file-size.js" type="text/javascript"></script>
+
 <script>
+    const maxSizeBytes = MAX_FILE_SIZE; // max in bytes
+    const maxSizeMB = maxSizeBytes / 1024 / 1024; // Maximum allowed size in MB
+
     // Translations
     const translations = {
     en: {
+      alertFailedSubmitFiles: 'Failed to submit files. Please try again.',
+      alertPleaseWaitUntil: 'Please wait until all files are uploaded.',
+      alertPleaseSelectFiles: 'Please select files to upload.',
+      alertTotalSizeExceeds: `Total size exceeds the maximum limit of ${maxSizeMB} MB.`,
       uploadText: "Upload",
       downloadText: "Download",
       fileUploadText: "File Upload",
@@ -65,6 +74,10 @@
       fileLinkText: "File link",
     },
     ru: {
+      alertFailedSubmitFiles: 'Не удалось отправить файлы. Попробуйте еще раз.',
+      alertPleaseWaitUntil: 'Пожалуйста, подождите, пока все файлы будут загружены.',
+      alertPleaseSelectFiles: 'Выберите файлы для загрузки.',
+      alertTotalSizeExceeds: `Общий размер файлов превышает максимальный лимит ${maxSizeMB} МБ.`,
       uploadText: "Загрузить",
       downloadText: "Скачать",
       fileUploadText: "Загрузка файлов",
