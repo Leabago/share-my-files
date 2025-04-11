@@ -64,7 +64,7 @@ func (app *application) routes() (http.Handler, error) {
 	mux.Get("/static/", http.StripPrefix("/static/", fileServer))
 
 	// https, validation for ZeroSSL
-	fileServerSSL := http.FileServer(http.Dir("./ssl"))
+	fileServerSSL := http.FileServer(http.Dir("/etc/ssl/config"))
 	mux.Get("/.well-known/pki-validation/", http.StripPrefix("/.well-known/pki-validation/", fileServerSSL))
 
 	return standardMiddleware.Then(mux), nil

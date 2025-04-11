@@ -129,7 +129,7 @@ func main() {
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		if err := srv.ListenAndServeTLS("./tls/certificate.crt", "./tls/private.key"); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServeTLS("/etc/ssl/private/tls.crt", "/etc/ssl/private/tls.key"); err != nil && err != http.ErrServerClosed {
 			panic(err)
 		}
 	}()

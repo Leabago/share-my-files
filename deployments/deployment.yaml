@@ -21,6 +21,12 @@ spec:
         volumeMounts:
           - name: my-storage
             mountPath: /tmp/share-my-files
+          - name: tls-certs
+            mountPath: "/etc/ssl/private"
+            readOnly: true
+          - name: zerossl
+            mountPath: "s"
+            readOnly: true
         ports:
         - containerPort: 8080
         imagePullPolicy: Never
@@ -67,6 +73,12 @@ spec:
         - name: my-storage
           persistentVolumeClaim:
             claimName: share-my-files
+        - name: tls-certs
+          secret:
+            secretName: share-my-files-tls-secret  # Refers to the TLS Secret
+        - name: zerossl
+          configMap:
+            name: zerossl-config
 ---
 apiVersion: v1
 kind: Service
