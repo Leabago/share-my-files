@@ -113,6 +113,8 @@ data:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
+  labels:
+    app: share-my-files
   name: share-my-files
   namespace: applications
 spec:
