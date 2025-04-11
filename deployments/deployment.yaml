@@ -71,10 +71,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app: share-my-files
   name: share-my-files
   namespace: applications
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: share-my-files
   ports:
@@ -86,6 +88,8 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  labels:
+    app: share-my-files
   name: app-config
   namespace: applications
 data:
@@ -113,6 +117,8 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  labels:
+    app: share-my-files
   name: share-my-files
   namespace: applications
 spec:
