@@ -1,5 +1,4 @@
 ui/static/js/max-file-size.js
 # deployments/tls
 
-share-my-files/templates/.sops.yaml
-share-my-files/templates/credentials.yaml.dec
+share-my-files/credentials.yaml.dec
