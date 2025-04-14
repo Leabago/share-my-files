@@ -12,6 +12,7 @@ helm secrets install share-my-files -f share-my-files/values.yaml -f share-my-fi
 </code>
 
 then use "helm uninstall" command
+
 <code>
 helm uninstall share-my-files --namespace=applications
 </code>
