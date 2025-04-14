@@ -118,13 +118,13 @@ autoscaling:
 volumes: 
   - name: my-storage
     persistentVolumeClaim:
-      claimName: {{ include "share-my-files.fullname" . }}
+      claimName: share-my-files
   - name: tls-certs
     secret:
-      secretName: {{ include "share-my-files.fullname" . }}  # Refers to the TLS Secret
+      secretName: share-my-files  # Refers to the TLS Secret
   - name: zerossl
     configMap:
-      name: zerossl-config
+      name: share-my-files
 # - name: foo
 #   secret:
 #     secretName: mysecret
