@@ -25,7 +25,7 @@ spec:
             mountPath: "/etc/ssl/private"
             readOnly: true
           - name: zerossl
-            mountPath: "s"
+            mountPath: "/etc/ssl/config"
             readOnly: true
         ports:
         - containerPort: 8080

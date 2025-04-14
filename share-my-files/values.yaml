@@ -115,14 +115,31 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes on the output Deployment definition.
-volumes: []
+volumes: 
+  - name: my-storage
+    persistentVolumeClaim:
+      claimName: {{ include "share-my-files.fullname" . }}
+  - name: tls-certs
+    secret:
+      secretName: {{ include "share-my-files.fullname" . }}  # Refers to the TLS Secret
+  - name: zerossl
+    configMap:
+      name: zerossl-config
 # - name: foo
 #   secret:
 #     secretName: mysecret
 #     optional: false
 
 # Additional volumeMounts on the output Deployment definition.
-volumeMounts: []
+volumeMounts:
+  - name: my-storage
+    mountPath: /tmp/share-my-files
+  - name: tls-certs
+    mountPath: "/etc/ssl/private"
+    readOnly: true
+  - name: zerossl
+    mountPath: "/etc/ssl/config"
+    readOnly: true
 # - name: foo
 #   mountPath: "/etc/foo"
 #   readOnly: true
