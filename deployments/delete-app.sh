@@ -4,3 +4,4 @@ kubectl delete all -l app=share-my-files -n applications
 
 # do not delete secrets,configmaps,pvc,pv
 # kubectl delete secrets,configmaps,pvc,pv -l app=share-my-files -n applications
+# kubectl delete secrets,configmaps -l app=share-my-files -n applications
