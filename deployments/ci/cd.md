@@ -11,6 +11,7 @@ to deploy via Helm, you need to install certificates before using the command "h
 helm secrets install share-my-files -f share-my-files/values.yaml -f share-my-files/credentials.yaml share-my-files --namespace=applications
 </code>
 
+
 then use "helm uninstall" command
 
 <code>
