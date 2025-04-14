@@ -1,12 +1,16 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: zerossl-config
-  labels:
-    app: share-my-files
-  namespace: applications
-data:
-  647D1E52D917C6217B83F58A26CB3156.txt: |-
-    A62EDA250DFB7021068F402EB57C6E9A94355517DE3B3A84A2D7CF6B7F4753C0
-    comodoca.com
-    f6d9d1c0130ee0a
+{
+	"data": "ENC[AES256_GCM,data:c044xEqch9iDJuwp6vuiz+1lv3OG/e2mY/eBQRZhxcsI+wQ/elaN3NGvpDvrfRiVbimf4zRKXzt27VHy+eajHY0tEW8mgUNim1Q1dBAL0vOE/cOSUnDqaULlxJkca3dcqQcgBGzRYc7WJNNwsTie3eoCAinT0m1OIR1/93f0ARI/c/9kdlONNWeEySX7UYP0XmL4MjG0DXPUDUgp9svOJkIDjWVAOFzUw477XpLExz5DEpWilRUzABjMODLlWJL8vRSihFIoNjJmYrSm00F0X/TkKj7PfUyZyNAH3Lq3nhYSDjTVZ6OdnbwT5cvob1hkCa3rsnSWBGwmOf3flP8U2d8UOkamFboePULKopybcG79V0QUVUM=,iv:LTmd9IJbtL8KCU4H6A5EwFf1R+/5iKUJEpX/YyRESmA=,tag:6at2ui1GBck1sI8hZnCV3Q==,type:str]",
+	"sops": {
+		"lastmodified": "2025-04-14T15:36:34Z",
+		"mac": "ENC[AES256_GCM,data:Tur0LopmFHzDtfPCPyKl1l7fgPDSQccNJd9QVEQyNhf1voI9Reg6mwU4iEfVEtAzJ1jDI/08t6kiQ87xZDcrdq0hUID/GFJyNtHr+lmZ7u5Y+T485F3g0D71rSQnxG8E+1Hph7odZsFrCXSNjRREadwkp7gHeBtfMjO6PHegqps=,iv:p9SQUg0vdxXRvfAx6qf3w9G9afuMNdB1Dsh8EF4NwVg=,tag:xSGMBFpbffjJtVxaIcoDAQ==,type:str]",
+		"pgp": [
+			{
+				"created_at": "2025-04-14T15:36:34Z",
+				"enc": "-----BEGIN PGP MESSAGE-----\n\nhQGMAzsRxinx0eBdAQv9G73DWUl9tLgC4FXn8VHdZYirlTWga1vWoSFCyF+d59/P\nyeOz+sVib3ngIKkgZJ4SMBXrZLGLdDT99vNDSSX8ySeJnELdt9LIcy9rNClLTC1j\nxILKVZtDHbH3vOYUd7v0BjbRGeKqveax+Z5MhkDbFPj+a6rMq33vmysCVqWVRtJH\nLF9rlTyGLYjVhp3H8YjHepjDDAo81+X0Cl+d61UuV3QvFdmjQTXcqPNUdwZikhzM\nH2HOp1dnDQEBAd1nGpcK0tcwrLCudeaLjmgPZjv6jX8At73K72iDXeg4b/DvEgT1\nUDF3RAbflf66pNFzxieGWMH8r43xN+gSaVgmPKWc4EUAnCfz4672CQFINdgPNDLH\nqHarUW8YSFYKbQqNA4mmB4umwMg7Fzc0Oy/98WOoFIEUOYlnzi1th+H4dPSdaOyQ\nwfb6QSn6sk9qrQvBR6vCrM/Kp/a+luYmg+kflBoM6+sUpx86kBqCKckv/2g2ZBAy\nXTNbstWLwFMGW0hXQFcl0lwBOpDFWF9eRw86edZAZExp2kAViNFLobtUtNSReKFZ\n3F04y98DXLHITWsQJm9dzth7BvC8wFhTJVPOo4qy/ir3Ev8bYm6DnOva+IxD30DK\nTaNMg1+ukxB9xtejfw==\n=rYCR\n-----END PGP MESSAGE-----",
+				"fp": "AF7529DC82E18B9A5F5D1EE3210D4F9FB2825684"
+			}
+		],
+		"unencrypted_suffix": "_unencrypted",
+		"version": "3.10.1"
+	}
+}

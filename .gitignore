@@ -1,6 +1,6 @@
 ui/static/js/max-file-size.js
-# deployments/tls
 
+# secrets
 share-my-files/credentials.yaml.dec
-share-my-files/certs/tls.crt
-share-my-files/certs/tls.key
+deployments/tls/tls-secret.yaml.dec
+deployments/tls/zerossl.yaml.dec
