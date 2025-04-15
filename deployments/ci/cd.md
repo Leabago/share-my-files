@@ -14,3 +14,5 @@ helm secrets install share-my-files -f share-my-files/values.yaml -f share-my-fi
 <code>
 helm uninstall share-my-files --namespace=applications
 </code>
+
+set nodePort: 32610 in share-my-files service
