@@ -5,14 +5,26 @@ to run the share-my-files application use the script ./deployments/go-run.sh whi
 to deploy the share-my-files application on kubernetes run the script ./deployments/update-image.sh which create image and apply deployment.yaml file
 
 ## deploy on kubernetes with helm
-to deploy via Helm, you first need to install certificates using the command "helm secrets install" then install the application using the command "helm uninstall"
+to deploy via Helm, you first need to install certificates using the command "helm secrets install" then install the application using the command "helm uninstall". Need to set "nodePort: 32610" in share-my-files service after installation, this port is connected to internal 8433 and external 433.
 
+### install secrets
 <code>
 helm secrets install share-my-files -f share-my-files/values.yaml -f share-my-files/credentials.yaml share-my-files --namespace=applications
 </code> 
 
+### uninstall secrets
+<code>
+helm secrets uninstall share-my-files --namespace=applications
+</code>
+
+### install share-my-files application
+<code>
+helm install share-my-files ./share-my-files --namespace=applications
+</code>
+
+### uninstall share-my-files application
 <code>
 helm uninstall share-my-files --namespace=applications
 </code>
 
-set nodePort: 32610 in share-my-files service
+ 
