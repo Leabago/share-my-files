@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 	"sync"
 
 	"github.com/bmizerany/pat"
@@ -18,11 +19,24 @@ var (
 	mutex      = &sync.Mutex{}                  // Protects access to sessionMap
 )
 
-func (app *application) routes() http.Handler {
-	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, app.secureHeaders, app.dnsValidation)
-	dynamicMiddleware := alice.New()
-
+func (app *application) routes() (http.Handler, error) {
+	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, app.secureHeaders)
 	mux := pat.New()
+	var dynamicMiddleware alice.Chain
+
+	dnsValidation := getEnv("DNS_VALIDATION", app.logger)
+
+	dnsValidBool, err := strconv.ParseBool(dnsValidation)
+	if err != nil {
+		return standardMiddleware.Then(mux), err
+	}
+
+	if dnsValidBool {
+		dynamicMiddleware = alice.New(app.dnsValidation)
+	} else {
+		dynamicMiddleware = alice.New()
+	}
+
 	mux.Get("/", dynamicMiddleware.ThenFunc(app.redirectHome))
 	mux.Get("/upload", dynamicMiddleware.ThenFunc(app.createSnippetForm))
 	mux.Post("/upload", dynamicMiddleware.ThenFunc(app.homeGetFiles))
@@ -38,6 +52,10 @@ func (app *application) routes() http.Handler {
 	// find file by sessionCode
 	mux.Get("/download", dynamicMiddleware.ThenFunc(app.createDownloadForm))
 
+	// HTTP Liveness and Readiness Probes
+	mux.Get("/healthz", http.HandlerFunc((app.healthzHandler)))
+	mux.Get("/readyz", http.HandlerFunc(app.readyzHandler))
+
 	// ping
 	mux.Get("/ping", http.HandlerFunc(ping))
 
@@ -46,8 +64,8 @@ func (app *application) routes() http.Handler {
 	mux.Get("/static/", http.StripPrefix("/static/", fileServer))
 
 	// https, validation for ZeroSSL
-	fileServerSSL := http.FileServer(http.Dir("./ssl"))
+	fileServerSSL := http.FileServer(http.Dir("/etc/ssl/config"))
 	mux.Get("/.well-known/pki-validation/", http.StripPrefix("/.well-known/pki-validation/", fileServerSSL))
 
-	return standardMiddleware.Then(mux)
+	return standardMiddleware.Then(mux), nil
 }

@@ -58,9 +58,6 @@
 <script src="../static/js/max-file-size.js" type="text/javascript"></script>
 
 <script>
-  const maxSizeBytes = MAX_FILE_SIZE; // max in bytes
-  const maxSizeMB = maxSizeBytes / 1024 / 1024; // Maximum allowed size in MB
-
   // Get the current URL
   const currentUrl = window.location.href;
 
@@ -203,27 +200,6 @@
   });
 
 
-  // Disable the drop zone and file input when the submit button is clicked
-  submitButton.addEventListener('click', () => {
-    dropZone.classList.add('disabled');
-    dropZone.style.pointerEvents = 'none'; // Disable pointer events
-    fileInput.disabled = true; // Disable the file input
-    console.log('Drag and drop zone disabled.');
-  });
-
-  // Add a click event listener to the submit button
-  submitButton.addEventListener('click', () => {
-    // Get all buttons with the class "btn btn-sm btn-danger"
-    const buttons = document.querySelectorAll('.btn.btn-sm.btn-danger');
-
-    // Loop through the buttons and disable them
-    buttons.forEach(button => {
-      button.disabled = true; // Disable the button
-      button.classList.add('disabled'); // Add Bootstrap's disabled class (optional)
-    });
-
-    console.log('All buttons with class "btn btn-sm btn-danger" have been disabled.');
-  });
 
 
   // Handle files (add or reject)
@@ -233,7 +209,9 @@
     let list = new DataTransfer();
 
     if (totalSize + newSize > maxSizeBytes) {
-      alert(`Total size exceeds the maximum limit of ${maxSizeMB} MB.`);
+      let savedLanguage = localStorage.getItem('language') || 'en';
+      let alertMessage = translations[savedLanguage].alertTotalSizeExceeds || translations['en'].alertTotalSizeExceeds;
+      alert(alertMessage);
       return;
     }
 
@@ -379,11 +357,17 @@
       });
   }
 
+
+
+
+
   // Submit files and redirect if all files are uploaded
   submitButton.addEventListener('click', async () => {
+    let savedLanguage = localStorage.getItem('language') || 'en';
 
     if (files.length === 0) {
-      alert('Please select files to upload.');
+      let alertMessage = translations[savedLanguage].alertPleaseSelectFiles || translations['en'].alertPleaseSelectFiles;
+      alert(alertMessage);
       return;
     }
 
@@ -391,7 +375,8 @@
     const allFilesUploaded = files.every(file => file.status === 'uploaded');
 
     if (!allFilesUploaded) {
-      alert('Please wait until all files are uploaded.');
+      let alertMessage = translations[savedLanguage].alertPleaseWaitUntil || translations['en'].alertPleaseWaitUntil;
+      alert(alertMessage);
       return;
     }
 
@@ -417,6 +402,23 @@
 
       // set disabled
       submitButton.disabled = true;
+      // Disable the drop zone and file input when the submit button is clicked
+      dropZone.classList.add('disabled');
+      dropZone.style.pointerEvents = 'none'; // Disable pointer events
+      fileInput.disabled = true; // Disable the file input
+      console.log('Drag and drop zone disabled.');
+      // Get all buttons with the class "btn btn-sm btn-danger"
+      const buttons = document.querySelectorAll('.btn.btn-sm.btn-danger');
+
+      // Loop through the buttons and disable them
+      buttons.forEach(button => {
+        button.disabled = true; // Disable the button
+        button.classList.add('disabled'); // Add Bootstrap's disabled class (optional)
+      });
+
+      console.log('All buttons with class "btn btn-sm btn-danger" have been disabled.');
+
+      //---------------------------
 
       // Handle successful response
       const sessionCode = await response.text(); // Get the response as plain text
@@ -449,7 +451,8 @@
       });
 
     } catch (error) {
-      alert('Failed to submit files. Please try again.');
+      let alertMessage = translations[savedLanguage].alertFailedSubmitFiles || translations['en'].alertFailedSubmitFiles;
+      alert(alertMessage);
       console.error('Error:', error);
     }
   });

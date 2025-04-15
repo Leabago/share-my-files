@@ -21,6 +21,12 @@ spec:
         volumeMounts:
           - name: my-storage
             mountPath: /tmp/share-my-files
+          - name: tls-certs
+            mountPath: "/etc/ssl/private"
+            readOnly: true
+          - name: zerossl
+            mountPath: "/etc/ssl/config"
+            readOnly: true
         ports:
         - containerPort: 8080
         imagePullPolicy: Never
@@ -42,39 +48,73 @@ spec:
             configMapKeyRef:
               name: app-config
               key: ALLOWED_HOST
+        - name: DNS_VALIDATION
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DNS_VALIDATION               
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+            scheme: HTTPS
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8080
+            scheme: HTTPS
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 2
       volumes:
         - name: my-storage
           persistentVolumeClaim:
             claimName: share-my-files
+        - name: tls-certs
+          secret:
+            secretName: share-my-files-tls-secret  # Refers to the TLS Secret
+        - name: zerossl
+          configMap:
+            name: zerossl-config
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app: share-my-files
   name: share-my-files
   namespace: applications
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: share-my-files
   ports:
     - protocol: TCP
-      port: 80
+      port: 8080
       targetPort: 8080
-
+      nodePort: 32610
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  labels:
+    app: share-my-files
   name: app-config
   namespace: applications
 data:
   MAX_FILE_SIZE: "3145728" # size in bytes
-  APP_PORT: ":8080" # ssh port
+  APP_PORT: ":8080" # inner port
   ALLOWED_HOST: "sharemyfiles.duckdns.org"
+  DNS_VALIDATION: "false"
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
+  labels:
+    app: share-my-files
   name: share-my-files
   namespace: applications
 spec:
@@ -91,6 +131,8 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  labels:
+    app: share-my-files
   name: share-my-files
   namespace: applications
 spec:

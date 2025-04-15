@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "share-my-files.fullname" . }}
+  labels:
+    {{- include "share-my-files.labels" . | nindent 4 }}
+data:
+  647D1E52D917C6217B83F58A26CB3156.txt: |-
+    A62EDA250DFB7021068F402EB57C6E9A94355517DE3B3A84A2D7CF6B7F4753C0
+    comodoca.com
+    f6d9d1c0130ee0a

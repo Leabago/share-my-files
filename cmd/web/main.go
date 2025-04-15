@@ -1,13 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"share-my-files/pkg/models"
 	"share-my-files/pkg/models/operation"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -27,6 +31,8 @@ type application struct {
 	templateCache map[string]*template.Template
 
 	maxFileSize int64
+
+	healthCheck *models.HealthCheck
 }
 
 type AppLogger struct {
@@ -36,7 +42,7 @@ type AppLogger struct {
 }
 
 func main() {
-	fmt.Println("start share-my-files! defects")
+	fmt.Println("start share-my-files! helm 1")
 
 	// create logger
 	logFormat := log.Ldate | log.Ltime | log.Lshortfile
@@ -78,24 +84,37 @@ func main() {
 		logger.errorLog.Fatal(err)
 	}
 
+	// health check for readiness probe
+	healthCheck := models.NewHealthCheck()
+
+	// Add Redis checker
+	healthCheck.AddChecker("redis", &models.RedisChecker{RedisClient: redisClient})
+
+	//  template cache
+	templateCache, err := newTemplateCache("./ui/html/", logger)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	app := &application{
-		logger:      logger,
-		files:       &operation.FileModel{},
-		redisClient: redisClient,
-		maxFileSize: maxFileSizeInt64,
+		logger:        logger,
+		files:         &operation.FileModel{},
+		redisClient:   redisClient,
+		maxFileSize:   maxFileSizeInt64,
+		healthCheck:   healthCheck,
+		templateCache: templateCache,
 	}
 
 	// delete files every 10 seconds
 	go app.deleteFileEveryNsec(10)
 
-	templateCache, err := app.newTemplateCache("./ui/html/")
+	handler, err := app.routes()
 	if err != nil {
 		errorLog.Fatal(err)
 	}
-	app.templateCache = templateCache
 
 	srv := &http.Server{
-		Handler: app.routes(),
+		Handler: handler,
 		Addr:    appPort,
 		// Good practice: enforce timeouts for servers you create!
 		IdleTimeout:  time.Minute,
@@ -105,6 +124,19 @@ func main() {
 
 	infoLog.Printf("Starting server on %s", appPort)
 
-	err = srv.ListenAndServeTLS("./tls/certificate.crt", "./tls/private.key")
-	errorLog.Fatal(err)
+	// Graceful shutdown
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		if err := srv.ListenAndServeTLS("/etc/ssl/private/tls.crt", "/etc/ssl/private/tls.key"); err != nil && err != http.ErrServerClosed {
+			panic(err)
+		}
+	}()
+
+	<-done
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	srv.Shutdown(ctx)
+
 }
